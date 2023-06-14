@@ -1,0 +1,16 @@
+lockfileVersion: '6.1'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+dependencies:
+  '@openzeppelin/contracts':
+    specifier: ^4.9.1
+    version: 4.9.1
+
+packages:
+
+  /@openzeppelin/contracts@4.9.1:
+    resolution: {integrity: sha512-aLDTLu/If1qYIFW5g4ZibuQaUsFGWQPBq1mZKp/txaebUnGHDmmiBhRLY1tDNedN0m+fJtKZ1zAODS9Yk+V6uA==}
+    dev: false
