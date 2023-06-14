@@ -114,7 +114,7 @@ contract Crowdfunding is Ownable {
         projects[_projectId].amountRaised += msg.value - feeAmount;
 
         // update contributors
-        contributionsByProject[msg.sender][_projectId] = msg.value - feeAmount;
+        contributionsByProject[msg.sender][_projectId] += msg.value - feeAmount;
         emit Contribution(_projectId, msg.sender, msg.value - feeAmount);
     }
 

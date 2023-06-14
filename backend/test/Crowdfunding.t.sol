@@ -41,6 +41,38 @@ contract CrowdfundingTest is Test {
         assertEq(crowdfunding.getProjectsByOwner(address(1))[0], 1);
     }
 
+    function testGetProject() public {
+        crowdfunding.createProject("name", "description", 100e18, 2 hours);
+        (string memory name, string memory description, uint256 goal, uint256 deadline, uint256 amountRaised, address owner, bool isClosed) = crowdfunding.getProject(0);
+        assertEq(name, "name");
+        assertEq(description, "description");
+        assertEq(goal, 100e18);
+        assertGe(deadline, block.timestamp + 2 hours - 5);
+        assertLe(deadline, block.timestamp + 2 hours);
+        assertEq(amountRaised, 0);
+        assertEq(owner, address(this));
+        assertFalse(isClosed);
+    }
+
+    function testGetContribution() public {
+        crowdfunding.createProject("name", "description", 100e18, 2 hours);
+        assertEq(crowdfunding.contributionsByProject(address(this), 0), 0);
+        crowdfunding.contribute{value: 1 ether}(0);
+        assertEq(crowdfunding.contributionsByProject(address(this), 0), 1e18);
+        crowdfunding.contribute{value: 1 ether}(0);
+        assertEq(crowdfunding.contributionsByProject(address(this), 0), 2e18);
+        crowdfunding.contribute{value: 1 ether}(0);
+        assertEq(crowdfunding.contributionsByProject(address(this), 0), 3e18);
+    }
+
+    function testSetFee() public {
+        assertEq(crowdfunding.fee(), 0);
+        crowdfunding.setFee(1);
+        assertEq(crowdfunding.fee(), 1);
+        crowdfunding.setFee(100);
+        assertEq(crowdfunding.fee(), 100);
+    }
+
     function testCreateProject() public {
         assertEq(crowdfunding.getProjectsCount(), 0);
         crowdfunding.createProject("name", "description", 100e18, 2 hours);
@@ -88,26 +120,45 @@ contract CrowdfundingTest is Test {
     }
 
     function testWithdraw() public {
-
-    }
-
-    function testSetFee() public {
-        assertEq(crowdfunding.fee(), 0);
-        crowdfunding.setFee(1);
-        assertEq(crowdfunding.fee(), 1);
-        crowdfunding.setFee(100);
-        assertEq(crowdfunding.fee(), 100);
-    }
-
-    function testOwnerWithdraw() public {
-
-    }
-
-    function testReceive() public {
-
+        crowdfunding.createProject("name", "description", 2e18, 2 hours);
+        crowdfunding.contribute{value: 2 ether}(0);
+        uint256 balanceBefore = address(this).balance;
+        crowdfunding.setFinished(0);
+        crowdfunding.withdraw(0);
+        assertEq(address(this).balance, balanceBefore + 2e18);
+        (,,,,uint256 amountRaised,,) = crowdfunding.getProject(0);
+        assertEq(amountRaised, 0);
     }
 
     function testSetFinished() public {
+        bool isClosed;
+        crowdfunding.createProject("name", "description", 100e18, 2 hours);
+        (,,,,,, isClosed) = crowdfunding.getProject(0);
+        assertFalse(isClosed);
+        crowdfunding.setFinished(0);
+        (,,,,,, isClosed) = crowdfunding.getProject(0);
+        assertTrue(isClosed);
+    }
+
+    function testOwnerWithdraw() public {
+        crowdfunding.createProject("name", "description", 2e18, 2 hours);
+        crowdfunding.setFee(10);
+        crowdfunding.contribute{value: 2 ether}(0);
+        crowdfunding.setFinished(0);
+        uint256 balanceBefore = address(this).balance;
+        crowdfunding.ownerWithdraw();
+        assertEq(address(this).balance, balanceBefore + 2e16);
+    }
+
+
+    function testReceive() public {
+        // address(crowdfunding).call{value: 1 ether}("");
+        // uint256 balanceBefore = address(this).balance;
+        // crowdfunding.ownerWithdraw();
+        // assertEq(address(this).balance, balanceBefore + 1 ether);
+    }
+
+    function testFallback() public {
 
     }
 
