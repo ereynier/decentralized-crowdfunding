@@ -3,10 +3,9 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 import "../src/Crowdfunding.sol";
-import { HelperCrowdfunding } from "./HelperCrowdfunding.t.sol";
+import {HelperCrowdfunding} from "./HelperCrowdfunding.t.sol";
 
 contract CrowdfundingRefundTest is Test, HelperCrowdfunding {
-
     receive() external payable {}
 
     function setUp() public {
@@ -18,7 +17,7 @@ contract CrowdfundingRefundTest is Test, HelperCrowdfunding {
         crowdfunding.contribute{value: 1 ether}(0);
         crowdfunding.setFinished(0);
         assertEq(crowdfunding.contributionsByProject(address(this), 0), 1e18);
-        uint balanceBefore = address(this).balance;
+        uint256 balanceBefore = address(this).balance;
         crowdfunding.refund(0);
         assertEq(address(this).balance, balanceBefore + 1e18);
         assertEq(crowdfunding.contributionsByProject(address(this), 0), 0);
@@ -63,5 +62,4 @@ contract CrowdfundingRefundTest is Test, HelperCrowdfunding {
         emit Refund(0, address(this), 1e18);
         crowdfunding.refund(0);
     }
-
 }

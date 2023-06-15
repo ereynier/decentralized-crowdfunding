@@ -3,10 +3,9 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 import "../src/Crowdfunding.sol";
-import { HelperCrowdfunding } from "./HelperCrowdfunding.t.sol";
+import {HelperCrowdfunding} from "./HelperCrowdfunding.t.sol";
 
 contract CrowdfundingGetProjectTest is Test, HelperCrowdfunding {
-
     receive() external payable {}
 
     function setUp() public {
@@ -15,7 +14,15 @@ contract CrowdfundingGetProjectTest is Test, HelperCrowdfunding {
 
     function testGetProject() public {
         crowdfunding.createProject("name", "description", 100e18, 2 hours);
-        (string memory name, string memory description, uint256 goal, uint256 deadline, uint256 amountRaised, address owner, bool isClosed) = crowdfunding.getProject(0);
+        (
+            string memory name,
+            string memory description,
+            uint256 goal,
+            uint256 deadline,
+            uint256 amountRaised,
+            address owner,
+            bool isClosed
+        ) = crowdfunding.getProject(0);
         assertEq(name, "name");
         assertEq(description, "description");
         assertEq(goal, 100e18);

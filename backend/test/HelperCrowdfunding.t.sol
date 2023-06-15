@@ -16,5 +16,4 @@ abstract contract HelperCrowdfunding {
     Crowdfunding crowdfunding;
 
     constructor() {}
-
 }

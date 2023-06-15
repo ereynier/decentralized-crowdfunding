@@ -3,10 +3,9 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 import "../src/Crowdfunding.sol";
-import { HelperCrowdfunding } from "./HelperCrowdfunding.t.sol";
+import {HelperCrowdfunding} from "./HelperCrowdfunding.t.sol";
 
 contract CrowdfundingFallbackTest is Test, HelperCrowdfunding {
-
     receive() external payable {}
 
     function setUp() public {
@@ -21,8 +20,7 @@ contract CrowdfundingFallbackTest is Test, HelperCrowdfunding {
 
     function test_RevertIf_FunctionNotExist() public {
         vm.expectRevert("Invalid function");
-        (bool success, ) = payable(address(crowdfunding)).call{value: 1 ether}(abi.encodeWithSignature("test()"));
+        (bool success,) = payable(address(crowdfunding)).call{value: 1 ether}(abi.encodeWithSignature("test()"));
         assertTrue(success);
     }
-
 }

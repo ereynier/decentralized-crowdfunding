@@ -3,10 +3,9 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 import "../src/Crowdfunding.sol";
-import { HelperCrowdfunding } from "./HelperCrowdfunding.t.sol";
+import {HelperCrowdfunding} from "./HelperCrowdfunding.t.sol";
 
 contract CrowdfundingContributeTest is Test, HelperCrowdfunding {
-
     receive() external payable {}
 
     function setUp() public {
@@ -67,5 +66,4 @@ contract CrowdfundingContributeTest is Test, HelperCrowdfunding {
         emit Contribution(0, address(this), 1e18);
         crowdfunding.contribute{value: 1 ether}(0);
     }
-
 }
