@@ -3,9 +3,9 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 import "../src/Crowdfunding.sol";
+import { HelperCrowdfunding } from "./HelperCrowdfunding.t.sol";
 
-contract CrowdfundingTest is Test {
-    Crowdfunding crowdfunding;
+contract CrowdfundingCreateProjectTest is Test, HelperCrowdfunding {
 
     receive() external payable {}
 
