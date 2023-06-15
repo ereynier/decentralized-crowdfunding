@@ -3,9 +3,10 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 import "../src/Crowdfunding.sol";
-import {HelperCrowdfunding} from "./HelperCrowdfunding.t.sol";
+import { HelperCrowdfunding } from "./HelperCrowdfunding.t.sol";
 
 contract CrowdfundingOwnerWithdrawTest is Test, HelperCrowdfunding {
+
     receive() external payable {}
 
     function setUp() public {
@@ -49,5 +50,19 @@ contract CrowdfundingOwnerWithdrawTest is Test, HelperCrowdfunding {
         vm.expectEmit();
         emit OwnerWithdraw(2e16);
         crowdfunding.ownerWithdraw();
+    }
+
+    function testFuzz_OwnerWithdraw(uint fee, uint x) public {
+        fee = bound(fee, 1, crowdfunding.MAX_FEE());
+        x = bound(x, 1, 1000);
+        crowdfunding.createProject("name", "description", x * 1e18, 2 hours);
+        crowdfunding.setFee(fee);
+        crowdfunding.contribute{value: x * 1 ether}(0);
+        crowdfunding.setFinished(0);
+        uint256 balanceBefore = address(this).balance;
+        vm.expectEmit();
+        emit OwnerWithdraw(fee * (x * 1e18) / crowdfunding.DENOMINATOR());
+        crowdfunding.ownerWithdraw();
+        assertEq(address(this).balance, balanceBefore + (fee * (x * 1e18) / crowdfunding.DENOMINATOR()));
     }
 }

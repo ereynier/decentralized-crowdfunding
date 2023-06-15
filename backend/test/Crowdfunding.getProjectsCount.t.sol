@@ -23,4 +23,14 @@ contract CrowdfundingGetProjectsCountTest is Test, HelperCrowdfunding {
         crowdfunding.createProject("name", "description", 100e18, 2 hours);
         assertEq(crowdfunding.getProjectsCount(), 3);
     }
+
+    function testFuzz_GetProjectsCount(uint x) public {
+        vm.assume(x < 100);
+        for (uint i = 0; i < x; i++) {
+            crowdfunding.createProject("name", "description", 100e18, 2 hours);
+            crowdfunding.setFinished(i);
+        }
+        assertEq(crowdfunding.getProjectsCount(), x);
+    }
+
 }

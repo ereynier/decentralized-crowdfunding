@@ -36,4 +36,10 @@ contract CrowdfundingSetFeeTest is Test, HelperCrowdfunding {
         emit FeeSet(1);
         crowdfunding.setFee(1);
     }
+
+    function testFuzz_SetFee(uint x) public {
+        vm.assume(x < crowdfunding.MAX_FEE());
+        crowdfunding.setFee(x);
+        assertEq(crowdfunding.fee(), x);
+    }
 }

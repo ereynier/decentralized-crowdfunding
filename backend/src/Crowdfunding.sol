@@ -2,8 +2,9 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract Crowdfunding is Ownable {
+contract Crowdfunding is Ownable, ReentrancyGuard {
 
     // EVENTS
 
@@ -118,7 +119,7 @@ contract Crowdfunding is Ownable {
         emit Contribution(_projectId, msg.sender, msg.value - feeAmount);
     }
 
-    function refund(uint256 _projectId) public {
+    function refund(uint256 _projectId) public nonReentrant() {
         require(_projectId < projects.length, "Project does not exist");
         isSetFinished(_projectId);
         require(projects[_projectId].isClosed, "Project is not closed");
@@ -133,7 +134,7 @@ contract Crowdfunding is Ownable {
         emit Refund(_projectId, msg.sender, amount);
     }
 
-    function withdraw(uint256 _projectId) public {
+    function withdraw(uint256 _projectId) public nonReentrant {
         require(_projectId < projects.length, "Project does not exist");
         isSetFinished(_projectId);
         require(projects[_projectId].isClosed, "Project is not closed");
@@ -158,7 +159,7 @@ contract Crowdfunding is Ownable {
 
     // owner functions
 
-    function ownerWithdraw() public onlyOwner {
+    function ownerWithdraw() public onlyOwner nonReentrant {
         require(feeBalance > 0, "No fee to withdraw");
         uint256 amount = feeBalance;
         feeBalance = 0;

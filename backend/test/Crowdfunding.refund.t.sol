@@ -62,4 +62,34 @@ contract CrowdfundingRefundTest is Test, HelperCrowdfunding {
         emit Refund(0, address(this), 1e18);
         crowdfunding.refund(0);
     }
+
+    function testFuzz_Refund(uint x) public {
+        x = bound(x, 1, 1000);
+        crowdfunding.createProject("name", "description", 10000e18, 2 hours);
+        crowdfunding.contribute{value: x * 1 ether}(0);
+        crowdfunding.setFinished(0);
+        uint256 balanceBefore = address(this).balance;
+        vm.expectEmit();
+        emit Refund(0, address(this), x * 1e18);
+        crowdfunding.refund(0);
+        assertEq(address(this).balance, balanceBefore + x * 1e18);
+        assertEq(crowdfunding.contributionsByProject(address(this), 0), 0);
+    }
+
+        function testFuzz_RefundWithFees(uint fee, uint x) public {
+        fee = bound(fee, 1, crowdfunding.MAX_FEE());
+        x = bound(x, 1, 1000);
+        crowdfunding.createProject("name", "description", x * 5e18, 2 hours);
+        crowdfunding.setFee(fee);
+        crowdfunding.contribute{value: x * 1 ether}(0);
+        deal(address(1), 1 ether);
+        vm.prank(address(1));
+        crowdfunding.contribute{value: 1 ether}(0);
+        crowdfunding.setFinished(0);
+        uint256 balanceBefore = address(this).balance;
+        vm.expectEmit();
+        emit Refund(0, address(this), x * 1e18 - (fee * (x * 1e18) / crowdfunding.DENOMINATOR()));
+        crowdfunding.refund(0);
+        assertEq(address(this).balance, balanceBefore + x * 1e18 - (fee * (x * 1e18) / crowdfunding.DENOMINATOR()));
+    }
 }

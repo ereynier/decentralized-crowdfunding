@@ -23,4 +23,11 @@ contract CrowdfundingFallbackTest is Test, HelperCrowdfunding {
         (bool success,) = payable(address(crowdfunding)).call{value: 1 ether}(abi.encodeWithSignature("test()"));
         assertTrue(success);
     }
+
+    function testFuzz_Fallback(uint x) public {
+        vm.assume(x < 1000);
+        (bool success,) = address(crowdfunding).call{value: x * 1 ether}("");
+        assertTrue(success);
+        assertEq(crowdfunding.feeBalance(), x * 1 ether);
+    }
 }

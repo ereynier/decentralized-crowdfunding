@@ -66,4 +66,15 @@ contract CrowdfundingContributeTest is Test, HelperCrowdfunding {
         emit Contribution(0, address(this), 1e18);
         crowdfunding.contribute{value: 1 ether}(0);
     }
+
+    function testFuzz_Contribute(uint256 x) public {
+        x = bound(x, 1, 1000);
+        crowdfunding.createProject("name", "description", 100e18, 2 hours);
+        vm.expectEmit();
+        emit Contribution(0, address(this), x * 1e18);
+        crowdfunding.contribute{value: (x) * 1 ether}(0);
+        (,,,, uint256 amountRaised,,) = crowdfunding.getProject(0);
+        assertEq(amountRaised, x * 1e18);
+        assertEq(crowdfunding.getContribution(address(this), 0), x * 1e18);
+    }
 }

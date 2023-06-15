@@ -35,4 +35,15 @@ contract CrowdfundingGetContributionTest is Test, HelperCrowdfunding {
         vm.expectRevert("Project does not exist");
         crowdfunding.getContribution(address(this), 1);
     }
+
+        function testFuzz_GetContribution(uint256 x) public {
+        x = bound(x, 1, 3);
+        crowdfunding.createProject("name", "description", 100e18, 2 hours);
+        crowdfunding.contribute{value: x * 1 ether}(0);
+        deal(address(1), x * 2 ether);
+        vm.prank(address(1));
+        crowdfunding.contribute{value: x * 2 ether}(0);
+        assertEq(crowdfunding.getContribution(address(this), 0), x * 1e18);
+        assertEq(crowdfunding.getContribution(address(1), 0), x * 2e18);
+    }
 }

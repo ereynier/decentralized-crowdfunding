@@ -15,4 +15,10 @@ contract CrowdfundingConstructorTest is Test, HelperCrowdfunding {
     function testConstructor() public {
         assertEq(crowdfunding.MAX_FEE(), 100);
     }
+
+    function testFuzz_Constructor(uint x) public {
+        x = bound(x, 0, 1000);
+        Crowdfunding cr = new Crowdfunding(x);
+        assertEq(cr.MAX_FEE(), x);
+    }
 }
