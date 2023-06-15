@@ -61,4 +61,11 @@ contract CrowdfundingContributeTest is Test, HelperCrowdfunding {
         crowdfunding.contribute{value: 1 ether}(0);
     }
 
+    function testContributeEmitsContribution() public {
+        crowdfunding.createProject("name", "description", 100e18, 2 hours);
+        vm.expectEmit();
+        emit Contribution(0, address(this), 1e18);
+        crowdfunding.contribute{value: 1 ether}(0);
+    }
+
 }

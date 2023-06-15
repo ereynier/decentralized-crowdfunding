@@ -84,9 +84,9 @@ contract Crowdfunding is Ownable {
 
     function createProject(string memory _name, string memory _description, uint256 _goal, uint256 _deadline) public returns(uint256) {
         require(_goal > 0, "Goal must be greater than 0");
-        require(_deadline > block.timestamp + 1 hours, "Deadline must be at least in 1 hour");
+        require(_deadline > 1 hours, "Deadline must be at least in 1 hour");
         require(projectsByOwner[msg.sender].length == 0 || projects[projectsByOwner[msg.sender][projectsByOwner[msg.sender].length - 1]].isClosed, "Users can only create one project at a time");
-        projects.push(Project(_name, _description, _goal, _deadline, 0, payable(msg.sender), false));
+        projects.push(Project(_name, _description, _goal, block.timestamp + _deadline, 0, payable(msg.sender), false));
         projectsByOwner[msg.sender].push(projects.length - 1);
         emit ProjectCreated(projects.length - 1);
         return (projects.length - 1);
