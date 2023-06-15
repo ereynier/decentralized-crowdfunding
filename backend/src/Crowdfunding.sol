@@ -36,7 +36,7 @@ contract Crowdfunding is Ownable {
 
     uint256 public immutable MAX_FEE;
 
-    uint256 private feeBalance;
+    uint256 public feeBalance;
 
     Project[] public projects;
 
@@ -176,8 +176,6 @@ contract Crowdfunding is Ownable {
 
     fallback() external payable {
         require(msg.data.length == 0, "Invalid function");
-        feeBalance += msg.value;
-        emit Received(msg.sender, msg.value);
     }
 
 }
