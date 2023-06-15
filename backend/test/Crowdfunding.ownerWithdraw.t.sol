@@ -22,4 +22,33 @@ contract CrowdfundingOwnerWithdrawTest is Test, HelperCrowdfunding {
         crowdfunding.ownerWithdraw();
         assertEq(address(this).balance, balanceBefore + 2e16);
     }
+
+    function test_RevertIf_NotOwner() public {
+        crowdfunding.createProject("name", "description", 2e18, 2 hours);
+        crowdfunding.setFee(10);
+        crowdfunding.contribute{value: 2 ether}(0);
+        crowdfunding.setFinished(0);
+        vm.expectRevert("Ownable: caller is not the owner");
+        vm.prank(address(1));
+        crowdfunding.ownerWithdraw();
+    }
+
+    function test_RevertIf_NoFee() public {
+        crowdfunding.createProject("name", "description", 2e18, 2 hours);
+        crowdfunding.setFee(0);
+        crowdfunding.contribute{value: 2 ether}(0);
+        crowdfunding.setFinished(0);
+        vm.expectRevert("No fee to withdraw");
+        crowdfunding.ownerWithdraw();
+    }
+
+    function testOwnerWithdrawEmitsOwnerWithdraw() public {
+        crowdfunding.createProject("name", "description", 2e18, 2 hours);
+        crowdfunding.setFee(10);
+        crowdfunding.contribute{value: 2 ether}(0);
+        crowdfunding.setFinished(0);
+        vm.expectEmit();
+        emit OwnerWithdraw(2e16);
+        crowdfunding.ownerWithdraw();
+    }
 }

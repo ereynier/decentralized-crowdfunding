@@ -22,4 +22,35 @@ contract CrowdfundingSetFinishedTest is Test, HelperCrowdfunding {
         (,,,,,, isClosed) = crowdfunding.getProject(0);
         assertTrue(isClosed);
     }
+
+    function test_RevertIf_ProjectNotExist() public {
+        vm.expectRevert("Project does not exist");
+        crowdfunding.setFinished(0);
+
+        crowdfunding.createProject("name", "desc", 10, 2 hours);
+        vm.expectRevert("Project does not exist");
+        crowdfunding.setFinished(1);
+    }
+
+    function test_RevertIf_NotProjectOwner() public {
+        crowdfunding.createProject("name", "description", 100e18, 2 hours);
+        vm.expectRevert("Only owner can set project as finished");
+        vm.prank(address(1));
+        crowdfunding.setFinished(0);
+    }
+
+    function test_RevertIf_ProjectAlreadyClosed() public {
+        crowdfunding.createProject("name", "description", 100e18, 2 hours);
+        crowdfunding.setFinished(0);
+        vm.expectRevert("Project is already closed");
+        crowdfunding.setFinished(0);
+    }
+
+    function testSetFinishedEmitsProjectFinished() public {
+        crowdfunding.createProject("name", "description", 100e18, 2 hours);
+        vm.expectEmit();
+        emit ProjectFinished(0);
+        crowdfunding.setFinished(0);
+    }
+
 }

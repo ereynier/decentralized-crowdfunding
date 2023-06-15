@@ -123,7 +123,7 @@ contract Crowdfunding is Ownable {
         isSetFinished(_projectId);
         require(projects[_projectId].isClosed, "Project is not closed");
         require(projects[_projectId].amountRaised < projects[_projectId].goal, "Project goal is reached");
-        require(contributionsByProject[msg.sender][_projectId] > 0, "You have not contributed to this project");
+        require(contributionsByProject[msg.sender][_projectId] > 0, "No contribution found");
         uint256 amount = contributionsByProject[msg.sender][_projectId];
         contributionsByProject[msg.sender][_projectId] = 0;
 
@@ -151,6 +151,7 @@ contract Crowdfunding is Ownable {
     function setFinished(uint256 _projectId) public {
         require(_projectId < projects.length, "Project does not exist");
         require(msg.sender == projects[_projectId].owner, "Only owner can set project as finished");
+        require(!projects[_projectId].isClosed, "Project is already closed");
         projects[_projectId].isClosed = true;
         emit ProjectFinished(_projectId);
     }
@@ -158,6 +159,7 @@ contract Crowdfunding is Ownable {
     // owner functions
 
     function ownerWithdraw() public onlyOwner {
+        require(feeBalance > 0, "No fee to withdraw");
         uint256 amount = feeBalance;
         feeBalance = 0;
 

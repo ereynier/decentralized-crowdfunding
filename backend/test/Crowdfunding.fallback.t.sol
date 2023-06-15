@@ -18,9 +18,11 @@ contract CrowdfundingFallbackTest is Test, HelperCrowdfunding {
         assertTrue(success);
         assertEq(crowdfunding.feeBalance(), 1 ether);
     }
-        // (success, ) = payable(address(crowdfunding)).call{value: 1 ether}(abi.encodeWithSignature("test()"));
-        // assertTrue(success);
-        // balanceBefore = address(this).balance;
-        // crowdfunding.ownerWithdraw();
-        // assertEq(address(this).balance, balanceBefore + 1 ether);
+
+    function test_RevertIf_FunctionNotExist() public {
+        vm.expectRevert("Invalid function");
+        (bool success, ) = payable(address(crowdfunding)).call{value: 1 ether}(abi.encodeWithSignature("test()"));
+        assertTrue(success);
+    }
+
 }
