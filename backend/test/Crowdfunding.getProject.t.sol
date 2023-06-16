@@ -21,7 +21,8 @@ contract CrowdfundingGetProjectTest is Test, HelperCrowdfunding {
             uint256 deadline,
             uint256 amountRaised,
             address owner,
-            bool isClosed
+            bool isClosed,
+            bool goalReached
         ) = crowdfunding.getProject(0);
         assertEq(name, "name");
         assertEq(description, "description");
@@ -31,6 +32,7 @@ contract CrowdfundingGetProjectTest is Test, HelperCrowdfunding {
         assertEq(amountRaised, 0);
         assertEq(owner, address(this));
         assertFalse(isClosed);
+        assertFalse(goalReached);
     }
 
     function test_RevertIf_ProjectNotExist() public {

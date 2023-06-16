@@ -2,8 +2,11 @@
 src = "src"
 out = "out"
 libs = ["lib"]
+viaIR = true
 
 [invariant]
 fail_on_revert = true
+runs = 2000
+depth = 30
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

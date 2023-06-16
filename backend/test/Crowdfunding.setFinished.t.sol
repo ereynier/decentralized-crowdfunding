@@ -15,19 +15,19 @@ contract CrowdfundingSetFinishedTest is Test, HelperCrowdfunding {
     function testSetFinished() public {
         bool isClosed;
         crowdfunding.createProject("name", "description", 100e18, 2 hours);
-        (,,,,,, isClosed) = crowdfunding.getProject(0);
+        (,,,,,, isClosed,) = crowdfunding.getProject(0);
         assertFalse(isClosed);
         crowdfunding.setFinished(0);
-        (,,,,,, isClosed) = crowdfunding.getProject(0);
+        (,,,,,, isClosed,) = crowdfunding.getProject(0);
         assertTrue(isClosed);
 
         crowdfunding.createProject("name", "description", 100e18, 2 hours);
-        (,,,,,, isClosed) = crowdfunding.getProject(1);
+        (,,,,,, isClosed,) = crowdfunding.getProject(1);
         assertFalse(isClosed);
         skip(3 hours);
         vm.prank(address(1));
         crowdfunding.setFinished(1);
-        (,,,,,, isClosed) = crowdfunding.getProject(1);
+        (,,,,,, isClosed,) = crowdfunding.getProject(1);
     }
 
     function test_RevertIf_ProjectNotExist() public {

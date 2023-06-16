@@ -19,7 +19,7 @@ contract CrowdfundingWithdrawTest is Test, HelperCrowdfunding {
         crowdfunding.setFinished(0);
         crowdfunding.withdraw(0);
         assertEq(address(this).balance, balanceBefore + 2e18);
-        (,,,, uint256 amountRaised,,) = crowdfunding.getProject(0);
+        (,,,, uint256 amountRaised,,,) = crowdfunding.getProject(0);
         assertEq(amountRaised, 0);
     }
 
@@ -76,7 +76,7 @@ contract CrowdfundingWithdrawTest is Test, HelperCrowdfunding {
         emit Withdraw(0, address(this), x * 1e18);
         crowdfunding.withdraw(0);
         assertEq(address(this).balance, balanceBefore + x * 1e18);
-        (,,,, uint256 amountRaised,,) = crowdfunding.getProject(0);
+        (,,,, uint256 amountRaised,,,) = crowdfunding.getProject(0);
         assertEq(amountRaised, 0);
     }
 

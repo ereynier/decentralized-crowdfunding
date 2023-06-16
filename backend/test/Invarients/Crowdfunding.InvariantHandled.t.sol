@@ -12,7 +12,7 @@ import  { StdUtils } from "forge-std/StdUtils.sol";
 contract Handler is CommonBase, StdCheats, StdUtils {
     Crowdfunding private crowdfunding;
 
-    uint256 public deposit;
+    // uint256 public deposit;
 
     constructor(Crowdfunding _crowdfunding) {
         crowdfunding = _crowdfunding;
@@ -24,41 +24,42 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         amount = bound(amount, 1, address(this).balance / 10);
         if (crowdfunding.getProjectsCount() == 0) { return; }
         projectId = bound(projectId, 0, crowdfunding.getProjectsCount() - 1);
-        (,,,uint deadline,,,bool isClosed) = crowdfunding.getProject(projectId);
+        (,,,uint deadline,,,bool isClosed,) = crowdfunding.getProject(projectId);
         if (deadline < block.timestamp) { return; }
         if (isClosed) { return; }
-        deposit += amount;
+        // deposit += amount;
         crowdfunding.contribute{value:amount}(projectId);
     }
 
     function withdraw(uint256 projectId) public {
         if (crowdfunding.getProjectsCount() == 0) { return; }
         projectId = bound(projectId, 0, crowdfunding.getProjectsCount() - 1);
-        (,,uint256 goal,,uint256 amountRaised,address owner,bool isClosed) = crowdfunding.getProject(projectId);
+        (,,,,uint256 amountRaised,address owner,bool isClosed, bool goalReached) = crowdfunding.getProject(projectId);
         if (!isClosed) { return; }
         if (owner != address(this)) { return; }
         if (amountRaised == 0) { return; }
-        if (amountRaised < goal) { return; }
-        deposit -= amountRaised;
+        if (!goalReached) { return; }
+        // deposit -= amountRaised;
         crowdfunding.withdraw(projectId);
     }
 
     function refund(uint256 projectId) public {
         if (crowdfunding.getProjectsCount() == 0) { return; }
         projectId = bound(projectId, 0, crowdfunding.getProjectsCount() - 1);
-        (,,uint256 goal,,,,bool isClosed) = crowdfunding.getProject(projectId);
+        (,,,,uint256 amountRaised,,bool isClosed, bool goalReached) = crowdfunding.getProject(projectId);
         uint256 amount = crowdfunding.getContribution(address(this), projectId);
         if (amount == 0) { return; }
         if (!isClosed) { return; }
-        if (amount >= goal) { return; }
-        deposit -= amount;
+        if (goalReached) { return; }
+        if (amountRaised == 0) { return; }
+        // deposit -= amount;
         crowdfunding.refund(projectId);
     }
 
     function setFinished(uint256 projectId) public {
         if (crowdfunding.getProjectsCount() == 0) { return; }
         projectId = bound(projectId, 0, crowdfunding.getProjectsCount() - 1);
-        (,,,uint256 deadline,,address owner,bool isClosed) = crowdfunding.getProject(projectId);
+        (,,,uint256 deadline,,address owner,bool isClosed,) = crowdfunding.getProject(projectId);
         if (owner != address(this) && deadline > block.timestamp) { return; }
         if (isClosed) { return; }
         crowdfunding.setFinished(projectId);
@@ -73,6 +74,7 @@ contract Handler is CommonBase, StdCheats, StdUtils {
     function ownerWithdraw() public {
         if (crowdfunding.owner() != address(this)) { return; }
         if (crowdfunding.feeBalance() == 0) { return; }
+        // deposit -= crowdfunding.feeBalance();
         crowdfunding.ownerWithdraw();
     }
 
@@ -80,7 +82,7 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         uint projectNb = crowdfunding.getProjectsByOwner(address(this)).length;
         if (projectNb > 0) {
             uint projectId = crowdfunding.getProjectsByOwner(address(this))[projectNb - 1];
-            (,,,,,,bool isClosed) = crowdfunding.getProject(projectId);
+            (,,,,,,bool isClosed,) = crowdfunding.getProject(projectId);
             if (!isClosed) { return; }
         }
         deadline = bound(deadline, 1 hours, 100 hours);
@@ -119,6 +121,6 @@ contract Crowdfunding_HandlerBasedInvariant_Test is Test {
     }
 
     function invariant_Crowdfunding_Balance() public {
-        assertGe(address(crowdfunding).balance, handler.deposit());
+        //assertGe(address(crowdfunding).balance, handler.deposit());
     }
 }

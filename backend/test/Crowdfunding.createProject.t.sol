@@ -23,7 +23,8 @@ contract CrowdfundingCreateProjectTest is Test, HelperCrowdfunding {
             uint256 deadline,
             uint256 amountRaised,
             address owner,
-            bool isClosed
+            bool isClosed,
+            bool goalReached
         ) = crowdfunding.getProject(0);
         assertEq(name, "name");
         assertEq(description, "description");
@@ -39,7 +40,7 @@ contract CrowdfundingCreateProjectTest is Test, HelperCrowdfunding {
 
         crowdfunding.createProject("2", "2", 100e18, 4 hours);
         assertEq(crowdfunding.getProjectsCount(), 2);
-        (name, description, goal, deadline, amountRaised, owner, isClosed) = crowdfunding.getProject(1);
+        (name, description, goal, deadline, amountRaised, owner, isClosed, goalReached) = crowdfunding.getProject(1);
         assertEq(name, "2");
         assertEq(description, "2");
         assertEq(goal, 100e18);
@@ -52,7 +53,7 @@ contract CrowdfundingCreateProjectTest is Test, HelperCrowdfunding {
         vm.prank(address(1));
         crowdfunding.createProject("1", "1", 15e18, 5 hours);
         assertEq(crowdfunding.getProjectsCount(), 3);
-        (name, description, goal, deadline, amountRaised, owner, isClosed) = crowdfunding.getProject(2);
+        (name, description, goal, deadline, amountRaised, owner, isClosed, goalReached) = crowdfunding.getProject(2);
         assertEq(name, "1");
         assertEq(description, "1");
         assertEq(goal, 15e18);

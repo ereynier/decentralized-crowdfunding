@@ -27,6 +27,7 @@ contract Crowdfunding is Ownable, ReentrancyGuard {
         uint256 amountRaised;
         address payable owner;
         bool isClosed;
+        bool goalReached;
     }
 
     // GLOBAL VAR
@@ -63,9 +64,9 @@ contract Crowdfunding is Ownable, ReentrancyGuard {
         return projectsByOwner[_owner];
     }
 
-    function getProject(uint256 _projectId) external view returns (string memory name, string memory description, uint256 goal, uint256 deadline, uint256 amountRaised, address owner, bool isClosed) {
+    function getProject(uint256 _projectId) external view returns (string memory name, string memory description, uint256 goal, uint256 deadline, uint256 amountRaised, address owner, bool isClosed, bool goalReached) {
         require(_projectId < projects.length, "Project does not exist");
-        return (projects[_projectId].name, projects[_projectId].description, projects[_projectId].goal, projects[_projectId].deadline, projects[_projectId].amountRaised, projects[_projectId].owner, projects[_projectId].isClosed);
+        return (projects[_projectId].name, projects[_projectId].description, projects[_projectId].goal, projects[_projectId].deadline, projects[_projectId].amountRaised, projects[_projectId].owner, projects[_projectId].isClosed, projects[_projectId].goalReached);
     }
 
     function getContribution(address _contributor, uint256 _projectId) external view returns (uint256) {
@@ -87,7 +88,7 @@ contract Crowdfunding is Ownable, ReentrancyGuard {
         require(_goal > 0, "Goal must be greater than 0");
         require(_deadline >= 1 hours, "Deadline must be at least in 1 hour");
         require(projectsByOwner[msg.sender].length == 0 || projects[projectsByOwner[msg.sender][projectsByOwner[msg.sender].length - 1]].isClosed, "Users can only create one project at a time");
-        projects.push(Project(_name, _description, _goal, block.timestamp + _deadline, 0, payable(msg.sender), false));
+        projects.push(Project(_name, _description, _goal, block.timestamp + _deadline, 0, payable(msg.sender), false, false));
         projectsByOwner[msg.sender].push(projects.length - 1);
         emit ProjectCreated(projects.length - 1);
         return (projects.length - 1);
@@ -105,6 +106,9 @@ contract Crowdfunding is Ownable, ReentrancyGuard {
 
         // Send the rest to the project owner
         projects[_projectId].amountRaised += msg.value - feeAmount;
+        if (projects[_projectId].amountRaised >= projects[_projectId].goal) {
+            projects[_projectId].goalReached = true;
+        }
 
         // update contributors
         contributionsByProject[msg.sender][_projectId] += msg.value - feeAmount;
@@ -114,7 +118,7 @@ contract Crowdfunding is Ownable, ReentrancyGuard {
     function refund(uint256 _projectId) public nonReentrant() {
         require(_projectId < projects.length, "Project does not exist");
         require(projects[_projectId].isClosed, "Project is not closed");
-        require(projects[_projectId].amountRaised < projects[_projectId].goal, "Project goal is reached");
+        require(!projects[_projectId].goalReached, "Project goal is reached");
         require(contributionsByProject[msg.sender][_projectId] > 0, "No contribution found");
         uint256 amount = contributionsByProject[msg.sender][_projectId];
         contributionsByProject[msg.sender][_projectId] = 0;
@@ -130,7 +134,7 @@ contract Crowdfunding is Ownable, ReentrancyGuard {
         require(projects[_projectId].isClosed, "Project is not closed");
         require(msg.sender == projects[_projectId].owner, "Only owner can withdraw");
         require(projects[_projectId].amountRaised > 0, "No amount to withdraw");
-        require(projects[_projectId].amountRaised >= projects[_projectId].goal, "Project goal is not reached");
+        require(projects[_projectId].goalReached, "Project goal is not reached");
         uint256 amount = projects[_projectId].amountRaised;
         projects[_projectId].amountRaised = 0;
 
