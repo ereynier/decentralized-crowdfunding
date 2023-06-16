@@ -20,6 +20,14 @@ contract CrowdfundingSetFinishedTest is Test, HelperCrowdfunding {
         crowdfunding.setFinished(0);
         (,,,,,, isClosed) = crowdfunding.getProject(0);
         assertTrue(isClosed);
+
+        crowdfunding.createProject("name", "description", 100e18, 2 hours);
+        (,,,,,, isClosed) = crowdfunding.getProject(1);
+        assertFalse(isClosed);
+        skip(3 hours);
+        vm.prank(address(1));
+        crowdfunding.setFinished(1);
+        (,,,,,, isClosed) = crowdfunding.getProject(1);
     }
 
     function test_RevertIf_ProjectNotExist() public {
@@ -33,7 +41,7 @@ contract CrowdfundingSetFinishedTest is Test, HelperCrowdfunding {
 
     function test_RevertIf_NotProjectOwner() public {
         crowdfunding.createProject("name", "description", 100e18, 2 hours);
-        vm.expectRevert("Only owner can set project as finished");
+        vm.expectRevert("Only owner can set project as finished or deadline must be passed");
         vm.prank(address(1));
         crowdfunding.setFinished(0);
     }
@@ -42,6 +50,13 @@ contract CrowdfundingSetFinishedTest is Test, HelperCrowdfunding {
         crowdfunding.createProject("name", "description", 100e18, 2 hours);
         crowdfunding.setFinished(0);
         vm.expectRevert("Project is already closed");
+        crowdfunding.setFinished(0);
+    }
+
+    function test_RevertIf_NotProjectOwnerAndDeadlineNotReached() public {
+        crowdfunding.createProject("name", "description", 100e18, 2 hours);
+        vm.expectRevert("Only owner can set project as finished or deadline must be passed");
+        vm.prank(address(1));
         crowdfunding.setFinished(0);
     }
 

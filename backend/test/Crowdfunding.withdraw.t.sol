@@ -23,6 +23,47 @@ contract CrowdfundingWithdrawTest is Test, HelperCrowdfunding {
         assertEq(amountRaised, 0);
     }
 
+    function test_RevertIf_ProjectNotExist() public {
+        vm.expectRevert("Project does not exist");
+        crowdfunding.withdraw(0);
+
+        crowdfunding.createProject("name", "desc", 10, 2 hours);
+        vm.expectRevert("Project does not exist");
+        crowdfunding.withdraw(1);
+    }
+
+    function test_RevertIf_NotProjectOwner() public {
+        crowdfunding.createProject("name", "description", 2e18, 2 hours);
+        crowdfunding.contribute{value: 2 ether}(0);
+        crowdfunding.setFinished(0);
+        vm.expectRevert("Only owner can withdraw");
+        vm.prank(address(1));
+        crowdfunding.withdraw(0);
+    }
+
+    function test_RevertIf_ProjectNotClosed() public {
+        crowdfunding.createProject("name", "description", 2e18, 2 hours);
+        vm.expectRevert("Project is not closed");
+        crowdfunding.withdraw(0);
+    }
+
+    function test_RevertIf_NoAmountToWithdraw() public {
+        crowdfunding.createProject("name", "description", 2e18, 2 hours);
+        crowdfunding.contribute{value: 3 ether}(0);
+        crowdfunding.setFinished(0);
+        crowdfunding.withdraw(0);
+        vm.expectRevert("No amount to withdraw");
+        crowdfunding.withdraw(0);
+    }
+
+    function test_RevertIf_GoalNotReached() public {
+        crowdfunding.createProject("name", "description", 2e18, 2 hours);
+        crowdfunding.contribute{value: 1 ether}(0);
+        crowdfunding.setFinished(0);
+        vm.expectRevert("Project goal is not reached");
+        crowdfunding.withdraw(0);
+    }
+
     function testFuzz_Withdraw(uint x, uint y) public {
         x = bound(x, 1, 1000);
         y = bound(y, 1, 1000);

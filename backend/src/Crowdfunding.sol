@@ -85,7 +85,7 @@ contract Crowdfunding is Ownable, ReentrancyGuard {
 
     function createProject(string memory _name, string memory _description, uint256 _goal, uint256 _deadline) public returns(uint256) {
         require(_goal > 0, "Goal must be greater than 0");
-        require(_deadline > 1 hours, "Deadline must be at least in 1 hour");
+        require(_deadline >= 1 hours, "Deadline must be at least in 1 hour");
         require(projectsByOwner[msg.sender].length == 0 || projects[projectsByOwner[msg.sender][projectsByOwner[msg.sender].length - 1]].isClosed, "Users can only create one project at a time");
         projects.push(Project(_name, _description, _goal, block.timestamp + _deadline, 0, payable(msg.sender), false));
         projectsByOwner[msg.sender].push(projects.length - 1);
@@ -93,18 +93,10 @@ contract Crowdfunding is Ownable, ReentrancyGuard {
         return (projects.length - 1);
     }
 
-    function isSetFinished(uint256 _projectId) internal {
-        require(_projectId < projects.length, "Project does not exist");
-        if (projects[_projectId].deadline < block.timestamp) {
-            projects[_projectId].isClosed = true;
-            emit ProjectFinished(_projectId);
-        }
-    }
-
     function contribute(uint256 _projectId) public payable {
         require(msg.value > 0, "Contribution must be greater than 0");
         require(_projectId < projects.length, "Project does not exist");
-        isSetFinished(_projectId);
+        require(projects[_projectId].deadline >= block.timestamp, "Project deadline is passed");
         require(!projects[_projectId].isClosed, "Project is closed");
 
         // Take the fees
@@ -121,7 +113,6 @@ contract Crowdfunding is Ownable, ReentrancyGuard {
 
     function refund(uint256 _projectId) public nonReentrant() {
         require(_projectId < projects.length, "Project does not exist");
-        isSetFinished(_projectId);
         require(projects[_projectId].isClosed, "Project is not closed");
         require(projects[_projectId].amountRaised < projects[_projectId].goal, "Project goal is reached");
         require(contributionsByProject[msg.sender][_projectId] > 0, "No contribution found");
@@ -136,10 +127,10 @@ contract Crowdfunding is Ownable, ReentrancyGuard {
 
     function withdraw(uint256 _projectId) public nonReentrant {
         require(_projectId < projects.length, "Project does not exist");
-        isSetFinished(_projectId);
         require(projects[_projectId].isClosed, "Project is not closed");
-        require(projects[_projectId].amountRaised >= projects[_projectId].goal, "Project goal is not reached");
         require(msg.sender == projects[_projectId].owner, "Only owner can withdraw");
+        require(projects[_projectId].amountRaised > 0, "No amount to withdraw");
+        require(projects[_projectId].amountRaised >= projects[_projectId].goal, "Project goal is not reached");
         uint256 amount = projects[_projectId].amountRaised;
         projects[_projectId].amountRaised = 0;
 
@@ -151,7 +142,7 @@ contract Crowdfunding is Ownable, ReentrancyGuard {
 
     function setFinished(uint256 _projectId) public {
         require(_projectId < projects.length, "Project does not exist");
-        require(msg.sender == projects[_projectId].owner, "Only owner can set project as finished");
+        require(msg.sender == projects[_projectId].owner || projects[_projectId].deadline < block.timestamp, "Only owner can set project as finished or deadline must be passed");
         require(!projects[_projectId].isClosed, "Project is already closed");
         projects[_projectId].isClosed = true;
         emit ProjectFinished(_projectId);
