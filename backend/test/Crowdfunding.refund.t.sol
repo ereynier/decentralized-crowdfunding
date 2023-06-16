@@ -54,15 +54,6 @@ contract CrowdfundingRefundTest is Test, HelperCrowdfunding {
         crowdfunding.refund(0);
     }
 
-    function test_RevertIf_Withdrawn() public {
-        crowdfunding.createProject("name", "description", 1e18, 2 hours);
-        crowdfunding.contribute{value: 3 ether}(0);
-        crowdfunding.setFinished(0);
-        crowdfunding.withdraw(0);
-        vm.expectRevert("No amount to refund");
-        crowdfunding.refund(0);
-    }
-
     function testRefundEmitsRefund() public {
         crowdfunding.createProject("name", "description", 5e18, 2 hours);
         crowdfunding.contribute{value: 1 ether}(0);

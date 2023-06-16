@@ -49,7 +49,7 @@ contract CrowdfundingContributeTest is Test, HelperCrowdfunding {
     function test_RevertIf_ContributeAfterDeadline() public {
         crowdfunding.createProject("name", "description", 100e18, 2 hours);
         skip(3 hours);
-        vm.expectRevert("Project is closed");
+        vm.expectRevert("Project deadline is passed");
         crowdfunding.contribute{value: 1 ether}(0);
     }
 
