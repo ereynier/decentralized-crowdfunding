@@ -1,5 +1,11 @@
 
+import { Metadata } from 'next'
 import Example from './components/Example'
+
+export const metadata: Metadata = {
+  title: 'DCrowdfunding | Example',
+  description: 'Decentralize crowdfunding integration example',
+}
 
 export default function Home() {
   return (

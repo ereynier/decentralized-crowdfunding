@@ -1,5 +1,10 @@
 "use client"
 import React, { useState } from 'react'
+import { abi } from "@contracts/Crowdfunding.json"
+import { useAccount, useContractRead, useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi'
+import Spinner from "@/public/spinner.svg"
+
+const crowdfundingAddress = process.env.CONTRACT_ADDRESS as `0x${string}`
 
 const CreateProject = () => {
 
@@ -9,11 +14,82 @@ const CreateProject = () => {
     const [days, setDays] = useState(0)
     const [hours, setHours] = useState(0)
     const [minutes, setMinutes] = useState(0)
+    const [deadline, setDeadline] = useState(0)
+    const [errorDisplay, setErrorDisplay] = useState("")
+    const [loading, setLoading] = useState(false)
+
+
+    const { address, isConnected } = useAccount()
+
+    const { config, error } = usePrepareContractWrite({
+        address: crowdfundingAddress,
+        abi: abi,
+        functionName: 'createProject',
+        args: [name, description, goal, deadline],
+    })
+
+    const { data, write } = useContractWrite(config)
+
+    const waitCreate = useWaitForTransaction({
+        enabled: !!data?.hash,
+        hash: data?.hash,
+        onSuccess() {
+            setLoading(false)
+        },
+        onError(error) {
+            console.log(error)
+            setErrorDisplay(error?.message)
+            setLoading(false)
+        }
+    })
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        const deadline = (days * 24 * 60 * 60) + (hours * 60 * 60) + (minutes * 60)
-        console.log(deadline)
+        if (error) {
+            console.log(error)
+            if (error.cause?.reason) {
+                setErrorDisplay(error?.cause.reason)
+                return
+            }
+        }
+        console.log('submit')
+        if (write) {
+            setErrorDisplay("")
+            write()
+            setName("")
+            setDescription("")
+            setGoal(0)
+            setDays(0)
+            setHours(0)
+            setMinutes(0)
+            setDeadline(0)
+        }
+    }
+
+    const handleDeadline = (pos: number, time: number) => {
+        const d = pos == 0 ? time : days
+        const h = pos == 1 ? time : hours
+        const m = pos == 2 ? time : minutes
+        const deadline = (d * 24 * 60 * 60) + (h * 60 * 60) + (m * 60)
+        setDeadline(deadline)
+    }
+
+    const handleDays = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const time = parseInt(e.target.value)
+        setDays(time)
+        handleDeadline(0, time)
+    }
+
+    const handleHours = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const time = parseInt(e.target.value)
+        setHours(time)
+        handleDeadline(1, time)
+    }
+
+    const handleMinutes = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const time = parseInt(e.target.value)
+        setMinutes(time)
+        handleDeadline(2, time)
     }
 
 
@@ -23,7 +99,7 @@ const CreateProject = () => {
                 <h1 className='text-2xl font-bold'>Create a new project</h1>
                 <div className='flex flex-col gap-1 justify-center w-1/2 p-2 rounded-lg'>
                     <label htmlFor="description">Name</label>
-                    <input type="text" className="w-full border rounded-md p-1" placeholder='Project name' value={name} onChange={(e) => setName(e.target.value)} />
+                    <input required type="text" className="w-full border rounded-md p-1" placeholder='Project name' value={name} onChange={(e) => setName(e.target.value)} />
                 </div>
                 <div className='flex flex-col gap-1 justify-center w-1/2 p-2 rounded-lg'>
                     <label htmlFor="description">Description</label>
@@ -31,26 +107,34 @@ const CreateProject = () => {
                 </div>
                 <div className='flex flex-col gap-1 justify-center w-1/2 p-2 rounded-lg'>
                     <label htmlFor="description">Goal: ETH</label>
-                    <input type="number" className="w-full border rounded-md p-1" placeholder='Project goal' value={goal} onChange={(e) => setGoal(parseFloat(e.target.value))} />
+                    <input required type="number" className="w-full border rounded-md p-1" placeholder='Project goal' value={goal} onChange={(e) => setGoal(parseFloat(e.target.value))} />
                 </div>
                 <div className='flex flex-col gap-1 justify-center w-1/2 p-2 rounded-lg'>
                     <label htmlFor="description">Deadline</label>
                     <div className='flex gap-5 justify-between'>
                         <div className='flex flex-col w-full'>
                             <label className='text-sm'>Days</label>
-                            <input type="number" className="w-full border rounded-md p-1" placeholder='Days' value={days} onChange={(e) => setDays(parseInt(e.target.value))} />
+                            <input required type="number" className="w-full border rounded-md p-1" placeholder='Days' value={days} onChange={handleDays} />
                         </div>
                         <div className='flex flex-col w-full'>
                             <label className='text-sm'>Hours</label>
-                            <input type="number" className="w-full border rounded-md p-1" placeholder='Hours' value={hours} onChange={(e) => setHours(parseInt(e.target.value))} />
+                            <input required type="number" className="w-full border rounded-md p-1" placeholder='Hours' value={hours} onChange={handleHours} />
                         </div>
                         <div className='flex flex-col w-full'>
                             <label className='text-sm'>Minutes</label>
-                            <input type="number" className="w-full border rounded-md p-1" placeholder='Minutes' value={minutes} onChange={(e) => setMinutes(parseInt(e.target.value))} />
+                            <input required type="number" className="w-full border rounded-md p-1" placeholder='Minutes' value={minutes} onChange={handleMinutes} />
                         </div>
                     </div>
                 </div>
-                <button className='bg-gradient-to-bl to-sky-400 from-blue-600 hover:bg-gradient-to-b shadow-lg hover:shadow-sm cursor-pointer text-white font-bold py-2 px-8 text-lg rounded w-fit mt-5'>Create</button>
+                <button title={error?.cause.reason} className={`bg-gradient-to-bl ${ !write ? "to-neutral-400 from-zinc-500 cursor-not-allowed" : "to-sky-400 from-blue-600 hover:bg-gradient-to-b shadow-lg hover:shadow-sm cursor-pointer" } text-white font-bold py-2 px-8 text-lg rounded w-fit mt-5`}>
+                    <Spinner alt="spinner" width={25} height={25} className={`${loading ? 'animate-spin block fill-white' : 'hidden'}`} />
+                    <p className={`${loading ? "hidden" : "block"}`}>Create</p>
+                </button>
+                <div className='flex flex-col items-center justify-center text-center'>
+                    {false && <p className='text-green-500 font-bold'>{`Project created with ID ${""}`}</p>}
+                    {!isConnected && <p className='text-red-500 font-bold'>Please connect your wallet</p>}
+                    {errorDisplay && <p className='text-red-500 font-bold'>{errorDisplay}</p>}
+                </div>
             </div>
         </form>
     )

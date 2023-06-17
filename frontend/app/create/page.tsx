@@ -1,7 +1,11 @@
-import { Inter } from 'next/font/google'
+
+import { Metadata } from 'next'
 import CreateProject from './components/CreateProject'
 
-const inter = Inter({ subsets: ['latin'] })
+export const metadata: Metadata = {
+  title: 'DCrowdfunding | Create',
+  description: 'Create your own decentralized crowdfunding',
+}
 
 export default function Home() {
   return (

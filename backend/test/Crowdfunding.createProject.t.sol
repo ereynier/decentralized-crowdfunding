@@ -70,8 +70,8 @@ contract CrowdfundingCreateProjectTest is Test, HelperCrowdfunding {
     }
 
     function test_RevertIf_DeadlineUnderMin() public {
-        vm.expectRevert("Deadline must be at least in 1 hour");
-        crowdfunding.createProject("name", "description", 100e18, 1 hours - 1 seconds);
+        vm.expectRevert("Deadline must be at least in 1 minute");
+        crowdfunding.createProject("name", "description", 100e18, 1 minutes - 1 seconds);
     }
 
     function test_RevertIf_UserHasActiveProject() public {

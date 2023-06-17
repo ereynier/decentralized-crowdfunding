@@ -1,13 +1,29 @@
+"use client"
 import Navbar from './components/Navbar'
 import './globals.css'
 import { Raleway } from 'next/font/google'
 
 const raleway = Raleway({ subsets: ['latin'] })
 
-export const metadata = {
-  title: 'Decentralized Crowdfunding',
-  description: 'A decentralized crowdfunding dapp',
-}
+// export const metadata = {
+//   title: 'Decentralized Crowdfunding',
+//   description: 'A decentralized crowdfunding dapp',
+// }
+
+import { foundry } from 'wagmi/chains'
+import { WagmiConfig, createConfig, configureChains } from 'wagmi'
+import { publicProvider } from 'wagmi/providers/public'
+
+const { chains, publicClient, webSocketPublicClient } = configureChains(
+  [foundry],
+  [publicProvider()],
+)
+
+const config = createConfig({
+  autoConnect: false,
+  publicClient,
+  webSocketPublicClient,
+})
 
 export default function RootLayout({
   children,
@@ -17,8 +33,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`bg-[url('/background.jpeg')] ${raleway.className}`}>
-        <Navbar />
-        {children}
+        <WagmiConfig config={config}>
+          <Navbar />
+          {children}
+        </WagmiConfig>
       </body>
     </html>
   )
