@@ -1,6 +1,7 @@
 import React from 'react'
 
 const Welcome = () => {
+
     return (
         <div className='w-full mx-8 flex flex-col items-center'>
             <div className='flex flex-col w-full items-start gap-4'>

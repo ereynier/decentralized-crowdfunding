@@ -1,10 +1,11 @@
 "use client"
 import React, { useEffect, useState } from 'react'
 import { Orbitron } from 'next/font/google'
-import { useAccount, useContractRead, useContractWrite } from 'wagmi'
+import { useAccount, useContractEvent, useContractRead, useContractWrite, useWaitForTransaction } from 'wagmi'
 import { montserrat } from "@utils/font"
 import { abi } from "@contracts/Crowdfunding.json"
 import { formatEther, parseEther } from 'viem'
+import Toast from '@/app/utils/Toast'
 
 const orbitron = Orbitron({ subsets: ['latin'] })
 const crowdfundingAddress = process.env.CONTRACT_ADDRESS as `0x${string}`
@@ -20,11 +21,19 @@ interface Project {
     goalReached: boolean
 }
 
+const ID = 13
+
 const Example = () => {
 
     const [deadline, setDeadline] = useState(0)
     const [timeLeft, setTimeLeft] = useState("")
     const [value, setValue] = useState("")
+    const [message, setMessage] = useState("")
+    const [type, setType] = useState("")
+    const [show, setShow] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [contributor, setContributor] = useState("")
+    const [amount, setAmount] = useState("")
 
     let project: Project = {
         name: "",
@@ -43,7 +52,7 @@ const Example = () => {
         address: crowdfundingAddress,
         abi: abi,
         functionName: 'getProject',
-        args: [2],
+        args: [ID],
         watch: true
     }) as { data: any[], isError: boolean, isLoading: boolean }
 
@@ -51,20 +60,58 @@ const Example = () => {
         address: crowdfundingAddress,
         abi: abi,
         functionName: 'contribute',
-        args: [2],
+        args: [ID],
         onSuccess() {
             setValue("")
+        },
+        onError(error: any) {
+            setMessage(error?.shortMessage)
+            setType("error")
+            setShow(true)
+            setLoading(false)
         }
     })
 
-    project.name = data[0]
-    project.description = data[1]
-    project.goal = Number(data[2])
-    project.deadline = Number(data[3])
-    project.raised = Number(data[4])
-    project.owner = data[5]
-    project.isClosed = data[6]
-    project.goalReached = data[7]
+    const waitContribute = useWaitForTransaction({
+        enabled: !!contribute.data?.hash,
+        hash: contribute.data?.hash,
+        onSuccess() {
+            setMessage("Contribution successful")
+            setType("success")
+            setShow(true)
+            setLoading(false)
+        },
+        onError(error: any) {
+            setMessage(error?.message)
+            setType("error")
+            setShow(true)
+            setLoading(false)
+        }
+    })
+
+    const contribution = useContractEvent({
+        address: crowdfundingAddress,
+        abi: abi,
+        eventName: 'Contribution',
+        listener: (log: any) => {
+            console.log(log)
+            log.filter((log: any) => Number(log.args.projectId) === ID).slice(-1).forEach((log: any) => {
+                setContributor(log.args.contributor)
+                setAmount(String(parseFloat(formatEther(BigInt(log.args.amount)))))
+            })
+        }
+    })
+
+    if (data) {
+        project.name = data[0]
+        project.description = data[1]
+        project.goal = Number(data[2])
+        project.deadline = Number(data[3])
+        project.raised = Number(data[4])
+        project.owner = data[5]
+        project.isClosed = data[6]
+        project.goalReached = data[7]
+    }
 
     useEffect(() => {
         if (deadline === 0 && project.deadline !== 0) {
@@ -99,6 +146,10 @@ const Example = () => {
         contribute.write({
             value: parseEther(value as `${number}`),
         })
+        setMessage("Waiting for transaction...")
+        setType("loading")
+        setShow(true)
+        setLoading(true)
     }
 
     if (isLoading) return (<div>Loading...</div>)
@@ -118,14 +169,17 @@ const Example = () => {
                 )}
             </div>
             <div className='w-9/12 mb-2'>
-                <p className='text-sm text-end mr-5'>{formatEther(BigInt(project.raised))} / {project.goal} ETH</p>
+                <p className='text-sm text-end mr-5'>{formatEther(BigInt(project.raised))} / {parseFloat(formatEther(BigInt(project.goal)))} ETH</p>
                 <div className='bg-gray-300 h-6 w-full rounded-full'>
-                    <div className='bg-gradient-to-tr to-sky-400 from-blue-600 h-full rounded-full' style={ parseFloat(formatEther(BigInt(project.raised))) / project.goal < 1 ? { width: (parseFloat(formatEther(BigInt(project.raised))) / project.goal) * 100 + '%' } : {width: 100 + "%"}}></div>
+                    <div className='bg-gradient-to-tr to-sky-400 from-blue-600 h-full rounded-full' style={parseFloat(formatEther(BigInt(project.raised))) / parseFloat(formatEther(BigInt(project.goal))) < 1 ? { width: (parseFloat(formatEther(BigInt(project.raised))) / parseFloat(formatEther(BigInt(project.goal)))) * 100 + '%' } : { width: 100 + "%" }}></div>
                 </div>
             </div>
             <div className='flex flex-col gap-1 items-center'>
-                <p className='text-3xl'>Last contribution: {"12 ETH"}</p>
-                <p className={`text-sm ${montserrat.className}`}>by 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4</p>
+                <div className='flex flex-row gap-2'>
+                    <p className={`text-3xl`}>New contribution:</p>
+                    <p className={`text-3xl ${montserrat.className} ${amount ? "" : "hidden"}`}>{amount} ETH</p>
+                </div>
+                <p className={`text-sm ${montserrat.className} ${amount ? "" : "hidden"}`}>by {contributor}</p>
             </div>
             <div className='flex flex-col items-center justify-center gap-4'>
                 <div className='flex flex-row gap-5 items-end'>
@@ -133,10 +187,11 @@ const Example = () => {
                         <label htmlFor="description" className='text-sm w-full text-start'>Amount in ETH</label>
                         <input type="text" className="w-full border rounded-md p-1" placeholder='Amount' value={value} onChange={handleValueChange} />
                     </div>
-                    <button disabled={!isConnected || deadline * 1000 < new Date().getTime()} onClick={handleClick} className={`bg-gradient-to-bl ${isConnected && deadline * 1000 > new Date().getTime() ? " to-sky-400 from-blue-600 hover:bg-gradient-to-b shadow-lg hover:shadow-sm cursor-pointer" : "to-neutral-400 from-gray-600 cursor-not-allowed"} text-white font-bold py-2 px-4 rounded w-fit`}>Contribute</button>
+                    <button disabled={!isConnected || deadline * 1000 < new Date().getTime() || loading} onClick={handleClick} className={`bg-gradient-to-bl ${isConnected && deadline * 1000 > new Date().getTime() && !loading ? " to-sky-400 from-blue-600 hover:bg-gradient-to-b shadow-lg hover:shadow-sm cursor-pointer" : "to-neutral-400 from-gray-600 cursor-not-allowed"} text-white font-bold py-2 px-4 rounded w-fit`}>Contribute</button>
                 </div>
                 {!isConnected && <p className='text-sm text-center'>Please connect your wallet to contribute</p>}
             </div>
+            <Toast message={message} type={type} show={show} onClick={() => { setShow(false) }} />
         </div>
     )
 }

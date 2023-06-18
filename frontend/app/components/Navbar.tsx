@@ -19,7 +19,7 @@ const Navbar = () => {
   })
 
   return (
-    <nav className="w-full bg-white bg-opacity-80 border-gray-200 shadow-md sticky top-0 z-50 navbar">
+    <nav className="w-full bg-white bg-opacity-85 border-gray-200 shadow-md sticky top-0 z-50 navbar">
       <div className="flex flex-wrap items-center justify-between mx-4 sm:mx-20 p-4 mb-2">
         <a href="https://ereynier.me" target='_blank' className="flex flex-col items-start">
           <span className={`self-center text-2xl font-semibold whitespace-nowrap `}>ESTÉBAN REYNIER</span>

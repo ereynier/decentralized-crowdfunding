@@ -1,8 +1,9 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { abi } from "@contracts/Crowdfunding.json"
 import { useAccount, useContractRead, useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi'
 import Spinner from "@/public/spinner.svg"
+import Toast from '@/app/utils/Toast'
 
 const crowdfundingAddress = process.env.CONTRACT_ADDRESS as `0x${string}`
 
@@ -10,52 +11,50 @@ const CreateProject = () => {
 
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
-    const [goal, setGoal] = useState(0)
+    const [goal, setGoal] = useState("")
     const [days, setDays] = useState(0)
     const [hours, setHours] = useState(0)
     const [minutes, setMinutes] = useState(0)
     const [deadline, setDeadline] = useState(0)
-    const [errorDisplay, setErrorDisplay] = useState("")
     const [loading, setLoading] = useState(false)
+    const [message, setMessage] = useState("")
+    const [type, setType] = useState("")
+    const [show, setShow] = useState(false)
 
 
     const { address, isConnected } = useAccount()
 
-    const { config, error } = usePrepareContractWrite({
+    const prepare = usePrepareContractWrite({
         address: crowdfundingAddress,
         abi: abi,
         functionName: 'createProject',
-        args: [name, description, goal, deadline],
-    })
+        args: [name, description, parseFloat(goal) * 1e18, deadline],
+    }) as { config: any, error: any }
 
-    const { data, write } = useContractWrite(config)
+    const { data, isSuccess, isError, isLoading, error, write, reset } = useContractWrite(prepare.config) as { data: any, isSuccess: boolean, isError: boolean, isLoading: boolean, error: any, write: any, reset: any }
 
     const waitCreate = useWaitForTransaction({
         enabled: !!data?.hash,
         hash: data?.hash,
         onSuccess() {
             setLoading(false)
+            setMessage("Project created successfully")
+            setType("success")
+            setShow(true)
+            reset()
         },
         onError(error) {
             console.log(error)
-            setErrorDisplay(error?.message)
+            setMessage(error?.message)
+            setType("error")
+            setShow(true)
             setLoading(false)
+            reset()
         }
     })
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        if (error) {
-            console.log(error)
-            if (error.cause?.reason) {
-                setErrorDisplay(error?.cause.reason)
-                return
-            }
-        }
-        console.log('submit')
-        if (write) {
-            setErrorDisplay("")
-            write()
+    useEffect(() => {
+        if (isSuccess) {
             setName("")
             setDescription("")
             setGoal(0)
@@ -63,6 +62,38 @@ const CreateProject = () => {
             setHours(0)
             setMinutes(0)
             setDeadline(0)
+        }
+        if (isLoading) {
+            setLoading(true)
+            setMessage("Creating project...")
+            setType("loading")
+            setShow(true)
+        }
+        if (isError && error) {
+            console.log({error})
+            setMessage(error?.shortMessage)
+            setType("error")
+            setShow(true)
+            setLoading(false)
+        }
+    }, [isSuccess, isLoading, isError, reset])
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        setGoal(String(parseFloat(goal)))
+        if (prepare.error) {
+            console.log(prepare.error)
+            if (prepare.error.cause?.reason) {
+                setMessage(prepare.error?.cause.reason)
+                setType("error")
+                setShow(true)
+                return
+            }
+        }
+        console.log('submit')
+        if (write) {
+            setShow(false)
+            write()
         }
     }
 
@@ -107,7 +138,7 @@ const CreateProject = () => {
                 </div>
                 <div className='flex flex-col gap-1 justify-center w-1/2 p-2 rounded-lg'>
                     <label htmlFor="description">Goal: ETH</label>
-                    <input required type="number" className="w-full border rounded-md p-1" placeholder='Project goal' value={goal} onChange={(e) => setGoal(parseFloat(e.target.value))} />
+                    <input required type="text" className="w-full border rounded-md p-1" placeholder='Project goal' value={goal} onChange={(e) => setGoal(e.target.value)} />
                 </div>
                 <div className='flex flex-col gap-1 justify-center w-1/2 p-2 rounded-lg'>
                     <label htmlFor="description">Deadline</label>
@@ -126,16 +157,16 @@ const CreateProject = () => {
                         </div>
                     </div>
                 </div>
-                <button title={error?.cause.reason} className={`bg-gradient-to-bl ${ !write ? "to-neutral-400 from-zinc-500 cursor-not-allowed" : "to-sky-400 from-blue-600 hover:bg-gradient-to-b shadow-lg hover:shadow-sm cursor-pointer" } text-white font-bold py-2 px-8 text-lg rounded w-fit mt-5`}>
+                <button disabled={isLoading} title={error?.cause.reason} className={`bg-gradient-to-bl ${ !write || isLoading ? "to-neutral-400 from-zinc-500 cursor-not-allowed" : "to-sky-400 from-blue-600 hover:bg-gradient-to-b shadow-lg hover:shadow-sm cursor-pointer" } text-white font-bold py-2 px-8 text-lg rounded w-fit mt-5`}>
                     <Spinner alt="spinner" width={25} height={25} className={`${loading ? 'animate-spin block fill-white' : 'hidden'}`} />
                     <p className={`${loading ? "hidden" : "block"}`}>Create</p>
                 </button>
                 <div className='flex flex-col items-center justify-center text-center'>
                     {false && <p className='text-green-500 font-bold'>{`Project created with ID ${""}`}</p>}
                     {!isConnected && <p className='text-red-500 font-bold'>Please connect your wallet</p>}
-                    {errorDisplay && <p className='text-red-500 font-bold'>{errorDisplay}</p>}
                 </div>
             </div>
+            <Toast message={message} type={type} show={show} onClick={() => { setShow(false) }} />
         </form>
     )
 }
