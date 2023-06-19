@@ -9,7 +9,7 @@ contract MyScript is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        Crowdfunding crowdfunding = new Crowdfunding(100);
+        new Crowdfunding(100);
 
         vm.stopBroadcast();
     }

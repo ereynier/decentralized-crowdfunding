@@ -1,7 +1,7 @@
 [profile.default]
 src = "src"
 out = "out"
-libs = ["lib"]
+libs = ["lib", "node_modules/.pnpm/@openzeppelin+contracts@4.9.1/node_modules"]
 viaIR = true
 
 [invariant]
