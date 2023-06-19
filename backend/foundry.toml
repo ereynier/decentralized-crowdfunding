@@ -9,7 +9,7 @@ fail_on_revert = true
 runs = 2000
 depth = 30
 
-[rpc_endpoint]
+[rpc_endpoints]
 sepolia = "${SEPOLIA_RPC_URL}"
 
 [etherscan]
