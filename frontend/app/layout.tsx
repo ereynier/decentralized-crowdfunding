@@ -13,6 +13,7 @@ const raleway = Raleway({ subsets: ['latin'] })
 import { foundry } from 'wagmi/chains'
 import { WagmiConfig, createConfig, configureChains } from 'wagmi'
 import { publicProvider } from 'wagmi/providers/public'
+import Footer from './components/Footer'
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [foundry],

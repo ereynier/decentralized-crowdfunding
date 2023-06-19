@@ -10,6 +10,8 @@ const nextConfig = {
   },
   env: {
     CONTRACT_ADDRESS: process.env.CONTRACT_ADDRESS,
+    EXAMPLE_ID: process.env.EXAMPLE_ID,
+    CHAIN: process.env.CHAIN,
   },
   webpack(config) {
     config.module.rules.push({

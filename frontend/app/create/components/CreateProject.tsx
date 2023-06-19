@@ -4,6 +4,7 @@ import { abi } from "@contracts/Crowdfunding.json"
 import { useAccount, useContractRead, useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi'
 import Spinner from "@/public/spinner.svg"
 import Toast from '@/app/utils/Toast'
+import { chain } from '@utils/chain'
 
 const crowdfundingAddress = process.env.CONTRACT_ADDRESS as `0x${string}`
 
@@ -29,6 +30,7 @@ const CreateProject = () => {
         abi: abi,
         functionName: 'createProject',
         args: [name, description, parseFloat(goal) * 1e18, deadline],
+        chainId: chain.id,
     }) as { config: any, error: any }
 
     const { data, isSuccess, isError, isLoading, error, write, reset } = useContractWrite(prepare.config) as { data: any, isSuccess: boolean, isError: boolean, isLoading: boolean, error: any, write: any, reset: any }
@@ -36,6 +38,7 @@ const CreateProject = () => {
     const waitCreate = useWaitForTransaction({
         enabled: !!data?.hash,
         hash: data?.hash,
+        chainId: chain.id,
         onSuccess() {
             setLoading(false)
             setMessage("Project created successfully")
@@ -57,7 +60,7 @@ const CreateProject = () => {
         if (isSuccess) {
             setName("")
             setDescription("")
-            setGoal(0)
+            setGoal("")
             setDays(0)
             setHours(0)
             setMinutes(0)
@@ -85,6 +88,11 @@ const CreateProject = () => {
             console.log(prepare.error)
             if (prepare.error.cause?.reason) {
                 setMessage(prepare.error?.cause.reason)
+                setType("error")
+                setShow(true)
+                return
+            } else {
+                setMessage(prepare.error?.message)
                 setType("error")
                 setShow(true)
                 return
@@ -157,7 +165,7 @@ const CreateProject = () => {
                         </div>
                     </div>
                 </div>
-                <button disabled={isLoading} title={error?.cause.reason} className={`bg-gradient-to-bl ${ !write || isLoading ? "to-neutral-400 from-zinc-500 cursor-not-allowed" : "to-sky-400 from-blue-600 hover:bg-gradient-to-b shadow-lg hover:shadow-sm cursor-pointer" } text-white font-bold py-2 px-8 text-lg rounded w-fit mt-5`}>
+                <button disabled={isLoading || loading} title={error?.cause.reason} className={`bg-gradient-to-bl ${ !write || isLoading || loading ? "to-neutral-400 from-zinc-500 cursor-not-allowed" : "to-sky-400 from-blue-600 hover:bg-gradient-to-b shadow-lg hover:shadow-sm cursor-pointer" } text-white font-bold py-2 px-8 text-lg rounded w-fit mt-5`}>
                     <Spinner alt="spinner" width={25} height={25} className={`${loading ? 'animate-spin block fill-white' : 'hidden'}`} />
                     <p className={`${loading ? "hidden" : "block"}`}>Create</p>
                 </button>

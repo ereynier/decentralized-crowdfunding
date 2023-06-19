@@ -6,6 +6,7 @@ import { montserrat } from "@utils/font"
 import { abi } from "@contracts/Crowdfunding.json"
 import { formatEther, parseEther } from 'viem'
 import Toast from '@/app/utils/Toast'
+import { chain } from '@utils/chain'
 
 const orbitron = Orbitron({ subsets: ['latin'] })
 const crowdfundingAddress = process.env.CONTRACT_ADDRESS as `0x${string}`
@@ -21,7 +22,7 @@ interface Project {
     goalReached: boolean
 }
 
-const ID = 13
+const ID = Number(process.env.EXAMPLE_ID)
 
 const Example = () => {
 
@@ -53,7 +54,8 @@ const Example = () => {
         abi: abi,
         functionName: 'getProject',
         args: [ID],
-        watch: true
+        watch: true,
+        chainId: chain.id,
     }) as { data: any[], isError: boolean, isLoading: boolean }
 
     const contribute = useContractWrite({
@@ -61,6 +63,7 @@ const Example = () => {
         abi: abi,
         functionName: 'contribute',
         args: [ID],
+        chainId: chain.id,
         onSuccess() {
             setValue("")
         },
@@ -75,6 +78,7 @@ const Example = () => {
     const waitContribute = useWaitForTransaction({
         enabled: !!contribute.data?.hash,
         hash: contribute.data?.hash,
+        chainId: chain.id,
         onSuccess() {
             setMessage("Contribution successful")
             setType("success")
@@ -93,6 +97,7 @@ const Example = () => {
         address: crowdfundingAddress,
         abi: abi,
         eventName: 'Contribution',
+        chainId: chain.id,
         listener: (log: any) => {
             console.log(log)
             log.filter((log: any) => Number(log.args.projectId) === ID).slice(-1).forEach((log: any) => {

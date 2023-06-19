@@ -4,6 +4,7 @@ import React from 'react'
 import { useAccount, useConnect } from 'wagmi'
 import { InjectedConnector } from 'wagmi/connectors/injected'
 import { montserrat } from '../utils/font'
+import { chain } from "@utils/chain"
 
 
 const Navbar = () => {
@@ -15,7 +16,10 @@ const Navbar = () => {
 
   const { address, isConnected } = useAccount()
   const { connect } = useConnect({
-    connector: new InjectedConnector(),
+    connector: new InjectedConnector({
+      chains: [chain]
+    }),
+    chainId: chain.id,
   })
 
   return (

@@ -4,6 +4,7 @@ import { abi } from "@contracts/Crowdfunding.json"
 import { montserrat } from '@/app/utils/font'
 import { formatEther, parseEther } from 'viem'
 import Toast from '@/app/utils/Toast'
+import { chain } from '@utils/chain'
 
 const crowdfundingAddress = process.env.CONTRACT_ADDRESS as `0x${string}`
 
@@ -19,10 +20,14 @@ interface Project {
 }
 
 interface Props {
-    ID: number
+    ID: number,
+    search: string,
+    withdrawable: boolean,
+    refundable: boolean,
+    finished: boolean
 }
 
-const Project = ({ ID }: Props) => {
+const Project = ({ ID, search, withdrawable, refundable, finished }: Props) => {
 
     const [timeLeft, setTimeLeft] = useState("")
     const [deadline, setDeadline] = useState(0)
@@ -66,6 +71,7 @@ const Project = ({ ID }: Props) => {
         abi: abi,
         functionName: 'setFinished',
         args: [ID],
+        chainId: chain.id,
         onError(error: any) {
             setMessage(error?.shortMessage)
             setType("error")
@@ -77,6 +83,7 @@ const Project = ({ ID }: Props) => {
     const waitClose = useWaitForTransaction({
         enabled: !!close.data?.hash,
         hash: close.data?.hash,
+        chainId: chain.id,
         onSuccess() {
             setMessage("Project closed successfully")
             setType("success")
@@ -96,6 +103,7 @@ const Project = ({ ID }: Props) => {
         abi: abi,
         functionName: 'contribute',
         args: [ID],
+        chainId: chain.id,
         onSuccess() {
             setValue("")
         },
@@ -110,6 +118,7 @@ const Project = ({ ID }: Props) => {
     const waitContribute = useWaitForTransaction({
         enabled: !!contribute.data?.hash,
         hash: contribute.data?.hash,
+        chainId: chain.id,
         onSuccess() {
             setMessage("Contribution successful")
             setType("success")
@@ -129,6 +138,7 @@ const Project = ({ ID }: Props) => {
         abi: abi,
         functionName: 'refund',
         args: [ID],
+        chainId: chain.id,
         onError(error: any) {
             setMessage(error?.shortMessage)
             setType("error")
@@ -140,6 +150,7 @@ const Project = ({ ID }: Props) => {
     const waitRefund = useWaitForTransaction({
         enabled: !!refund.data?.hash,
         hash: refund.data?.hash,
+        chainId: chain.id,
         onSuccess() {
             setMessage("Refund successful")
             setType("success")
@@ -159,6 +170,7 @@ const Project = ({ ID }: Props) => {
         abi: abi,
         functionName: 'withdraw',
         args: [ID],
+        chainId: chain.id,
         onError(error: any) {
             setMessage(error?.shortMessage)
             setType("error")
@@ -170,6 +182,7 @@ const Project = ({ ID }: Props) => {
     const waitWithdraw = useWaitForTransaction({
         enabled: !!withdraw.data?.hash,
         hash: withdraw.data?.hash,
+        chainId: chain.id,
         onSuccess() {
             setMessage("Withdraw successful")
             setType("success")
@@ -189,6 +202,7 @@ const Project = ({ ID }: Props) => {
         abi: abi,
         functionName: 'getProject',
         args: [ID],
+        chainId: chain.id,
         watch: true
     }) as { data: any[], isError: boolean, isLoading: boolean }
 
@@ -197,6 +211,7 @@ const Project = ({ ID }: Props) => {
         abi: abi,
         functionName: 'getContribution',
         args: [address, ID],
+        chainId: chain.id,
         watch: true
     }) as { data: number, isError: boolean, isLoading: boolean }
 
@@ -245,6 +260,66 @@ const Project = ({ ID }: Props) => {
         setLoading(true)
     }
 
+    const searching = (search: string) => {
+        if (search === "") {
+            return false
+        }
+        if (project.name.toLowerCase().includes(search.toLowerCase())) {
+            return false
+        }
+        if (project.description.toLowerCase().includes(search.toLowerCase())) {
+            return false
+        }
+        if (project.owner.toLowerCase().includes(search.toLowerCase())) {
+            return false
+        }
+        if (ID.toString().includes(search)) {
+            return false
+        }
+        return true
+    }
+
+    const isWithdrawable = () => {
+        if (project.isClosed && project.goalReached && project.owner === address && project.raised != 0) {
+            return true
+        }
+        return false
+    }
+
+    const isRefundable = () => {
+        if (project.isClosed && !project.goalReached && address && getContribution.data != 0) {
+            return true
+        }
+        return false
+    }
+
+    const isFinished = () => {
+        if (project.isClosed && !isRefundable() && !isWithdrawable()) {
+            return true
+        }
+        return false
+    }
+
+    const isHidden = () => {
+        if (searching(search)) {
+            return true
+        }
+        if (!finished && isFinished()) {
+            return true
+        }
+        if (!withdrawable && !refundable) {
+            return false
+        }
+        if (withdrawable && isWithdrawable()) {
+            return false
+        }
+        if (refundable && isRefundable()) {
+            return false
+        }
+        return true
+    }
+
+
     if (projectRead.isLoading) return (<div>Loading...</div>)
     if (projectRead.isError) return (<div>Error</div>)
 
@@ -261,7 +336,7 @@ const Project = ({ ID }: Props) => {
     }
 
     return (
-        <div className='flex flex-col lg:flex-row gap-3 items-center justify-between w-full p-5 mb-4 rounded-lg bg-white bg-opacity-90 py-5 shadow-md'>
+        <div className={`${isHidden() ? "hidden" : ""} flex flex-col lg:flex-row gap-3 items-center justify-between w-full p-5 mb-4 rounded-lg bg-white bg-opacity-90 py-5 shadow-md`}>
             <div className='flex flex-col gap-1 items-start w-full lg:w-1/5 text-start'>
                 <h1 className='text-lg font-bold'>{project.name}</h1>
                 <h3 className="text-md">{project.description}</h3>
