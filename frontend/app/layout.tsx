@@ -10,13 +10,13 @@ const raleway = Raleway({ subsets: ['latin'] })
 //   description: 'A decentralized crowdfunding dapp',
 // }
 
-import { foundry } from 'wagmi/chains'
+import { chain } from "@utils/chain"
 import { WagmiConfig, createConfig, configureChains } from 'wagmi'
 import { publicProvider } from 'wagmi/providers/public'
 import Footer from './components/Footer'
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [foundry],
+  [chain],
   [publicProvider()],
 )
 
