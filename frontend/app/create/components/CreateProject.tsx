@@ -134,33 +134,33 @@ const CreateProject = () => {
 
     return (
         <form onSubmit={handleSubmit} className='flex flex-col gap-3 w-full items-center justify-center'>
-            <div className='flex flex-col gap-2 items-center justify-center w-1/2 p-5 rounded-lg bg-white bg-opacity-90 py-10 shadow-lg'>
-                <h1 className='text-2xl font-bold'>Create a new project</h1>
-                <div className='flex flex-col gap-1 justify-center w-1/2 p-2 rounded-lg'>
-                    <label htmlFor="description">Name</label>
+            <div className='flex flex-col gap-2 items-center justify-center w-11/12 sm:w-4/5 lg:w-1/2 p-5 rounded-lg bg-white bg-opacity-90 py-10 shadow-lg'>
+                <h1 className=' text-center text-xl sm:text-2xl font-bold'>Create a new project</h1>
+                <div className='flex flex-col gap-1 justify-center sm:w-4/5 md:w-1/2 p-2 rounded-lg'>
+                    <label htmlFor="description" className='text-sm sm:text-lg'>Name</label>
                     <input required type="text" className="w-full border rounded-md p-1" placeholder='Project name' value={name} onChange={(e) => setName(e.target.value)} />
                 </div>
-                <div className='flex flex-col gap-1 justify-center w-1/2 p-2 rounded-lg'>
-                    <label htmlFor="description">Description</label>
+                <div className='flex flex-col gap-1 justify-center sm:w-4/5 md:w-1/2 p-2 rounded-lg'>
+                    <label htmlFor="description" className='text-sm sm:text-lg'>Description</label>
                     <input type="text" className="w-full border rounded-md p-1" placeholder='Project description' value={description} onChange={(e) => setDescription(e.target.value)} />
                 </div>
-                <div className='flex flex-col gap-1 justify-center w-1/2 p-2 rounded-lg'>
-                    <label htmlFor="description">Goal: ETH</label>
+                <div className='flex flex-col gap-1 justify-center sm:w-4/5 md:w-1/2 p-2 rounded-lg'>
+                    <label htmlFor="description" className='text-sm sm:text-lg'>Goal: ETH</label>
                     <input required type="text" className="w-full border rounded-md p-1" placeholder='Project goal' value={goal} onChange={(e) => setGoal(e.target.value)} />
                 </div>
-                <div className='flex flex-col gap-1 justify-center w-1/2 p-2 rounded-lg'>
-                    <label htmlFor="description">Deadline</label>
-                    <div className='flex gap-5 justify-between'>
+                <div className='flex flex-col gap-1 justify-center sm:w-4/5 md:w-1/2 p-2 rounded-lg'>
+                    <label htmlFor="description" className='text-sm sm:text-lg'>Deadline</label>
+                    <div className='flex flex-col sm:flex-row gap-5 justify-between'>
                         <div className='flex flex-col w-full'>
-                            <label className='text-sm'>Days</label>
+                            <label className='text-xs sm:text-sm'>Days</label>
                             <input required type="number" className="w-full border rounded-md p-1" placeholder='Days' value={days} onChange={handleDays} />
                         </div>
                         <div className='flex flex-col w-full'>
-                            <label className='text-sm'>Hours</label>
+                            <label className='text-xs sm:text-sm'>Hours</label>
                             <input required type="number" className="w-full border rounded-md p-1" placeholder='Hours' value={hours} onChange={handleHours} />
                         </div>
                         <div className='flex flex-col w-full'>
-                            <label className='text-sm'>Minutes</label>
+                            <label className='text-xs sm:text-sm'>Minutes</label>
                             <input required type="number" className="w-full border rounded-md p-1" placeholder='Minutes' value={minutes} onChange={handleMinutes} />
                         </div>
                     </div>

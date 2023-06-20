@@ -31,7 +31,7 @@ const Navbar = () => {
         </a>
         <div className="flex items-center justify-center md:justify-start md:ml-4">
           {isConnected ? (
-            <p onClick={() => { navigator.clipboard.writeText(address as string);}} title='Click to copy' className={`text-black font-medium text-lg cursor-pointer ${montserrat.className}`}>{address}</p>
+            <p onClick={() => { navigator.clipboard.writeText(address as string);}} title='Click to copy' className={`break-all text-black font-medium text-lg cursor-pointer ${montserrat.className}`}>{address}</p>
           ) : (
             <button onClick={() => connect()} type="button" className="text-gray-900 bg-white bg-opacity-70 hover:bg-opacity-90 hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center mr-2 mb-2">
               <Image src="/metamask.svg" alt="Metamask" width={20} height={20} className='mr-2' />

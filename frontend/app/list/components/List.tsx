@@ -17,35 +17,37 @@ const List = () => {
   const [withdrawable, setWithdrawable] = React.useState(false)
   const [refundable, setRefundable] = React.useState(false)
   const [finished, setFinished] = React.useState(true)
+  const [projects, setProjects] = React.useState<number[]>([])
 
-  useEffect(() => {
-    setMul(sort === 'newest' ? 1 : -1)
-  }, [sort])
-
+  
   const { data, isError, isLoading } = useContractRead({
     address: crowdfundingAddress,
     abi: abi,
     functionName: 'getProjectsCount',
     chainId: chain.id,
   })
-
-
+  
+  
   const handleSearch = (e: React.MouseEvent<HTMLButtonElement>) => {
     setStartSearch(search)
   }
-
+  
   const handleResetSearch = (e: React.MouseEvent<HTMLButtonElement>) => {
     setSearch("")
     setStartSearch("")
   }
 
-  if (isLoading) return (<div>Loading...</div>)
-  if (isError) return (<div>Error</div>)
-
+  useEffect(() => {
+    setMul(sort === 'newest' ? 1 : -1)
+    if (data) {
+      setProjects(Array.from({ length: Number(data) }, (_, index) => index).sort((a, b) => { return (b - a) * mul }))
+    }
+  }, [sort, data, mul])
+  
   return (
     <div className='flex flex-col gap2 w-full'>
-      <div className='flex flex-row justify-between mb-2'>
-        <div className='flex flex-row gap-8'>
+      <div className='flex flex-col lg:flex-row justify-between mb-2 gap-2'>
+        <div className='flex flex-col md:flex-row gap-2 md:gap-8'>
           <div className='flex flex-row gap-2'>
             <button className='bg-white hover:bg-gray-300 rounded-md px-2 py-1' onClick={() => setSort('newest')}>Newest</button>
             <button className='bg-white hover:bg-gray-300 rounded-md px-2 py-1' onClick={() => setSort('oldest')}>Oldest</button>
@@ -58,7 +60,7 @@ const List = () => {
             <button className={`${finished ? " to-orange-300 from-orange-500 text-white" : "from-gray-400 to-gray-300 hover:bg-gray-300"} font-medium bg-gradient-to-bl hover:bg-gradient-to-b rounded-md px-2 py-1`} onClick={() => { setFinished(!finished) }}>Finished</button>
           </div>
         </div>
-        <div className='flex flex-row gap-2'>
+        <div className='flex flex-wrap sm:flex sm:flex-row gap-2'>
           <button onClick={handleResetSearch} className='bg-white hover:bg-gray-300 rounded-md px-2 py-1'>
             <Resetsvg className='w-4 h-4 stroke-2' />
           </button>
@@ -67,7 +69,7 @@ const List = () => {
         </div>
       </div>
       <ul>
-        {Array.from({ length: Number(data) }, (_, index) => index).sort((a, b) => { return (b - a) * mul }).map((index) => (
+        {projects.map((index) => (
           <Project key={index} ID={index} search={startSearch} withdrawable={withdrawable} refundable={refundable} finished={finished} />
         ))}
       </ul>

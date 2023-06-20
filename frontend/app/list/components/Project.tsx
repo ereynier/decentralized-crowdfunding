@@ -36,10 +36,7 @@ const Project = ({ ID, search, withdrawable, refundable, finished }: Props) => {
     const [show, setShow] = useState(false)
     const [value, setValue] = useState("")
     const [loading, setLoading] = useState(false)
-
-    const { address, isConnected } = useAccount()
-
-    let project: Project = {
+    const [project, setProject] = useState<Project>({
         name: "",
         description: "",
         goal: 0,
@@ -48,24 +45,11 @@ const Project = ({ ID, search, withdrawable, refundable, finished }: Props) => {
         raised: 0,
         isClosed: false,
         goalReached: false
-    }
+    })
 
-    useEffect(() => {
-        if (deadline !== 0 && new Date().getTime() < deadline * 1000) {
-            const interval = setInterval(() => {
-                const now = new Date().getTime()
-                const date = new Date(deadline * 1000).getTime()
-                const diffTime = Math.abs(date - now)
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-                const diffHours = Math.floor(diffTime / (1000 * 60 * 60)) % 24
-                const diffMinutes = Math.floor(diffTime / (1000 * 60)) % 60
-                const diffSeconds = Math.floor(diffTime / (1000)) % 60
-                setTimeLeft(`${diffDays.toString().padStart(2, "0")} : ${diffHours.toString().padStart(2, "0")} : ${diffMinutes.toString().padStart(2, "0")} : ${diffSeconds.toString().padStart(2, "0")}`)
-            }, 1000)
-            return () => clearInterval(interval)
-        }
-    }, [timeLeft, deadline])
+    const { address, isConnected } = useAccount()
 
+    
     const close = useContractWrite({
         address: crowdfundingAddress,
         abi: abi,
@@ -319,24 +303,39 @@ const Project = ({ ID, search, withdrawable, refundable, finished }: Props) => {
         return true
     }
 
-
-    if (projectRead.isLoading) return (<div>Loading...</div>)
-    if (projectRead.isError) return (<div>Error</div>)
-
-    project.name = projectRead.data[0]
-    project.description = projectRead.data[1]
-    project.goal = parseFloat(formatEther(BigInt(projectRead.data[2])))
-    project.deadline = Number(projectRead.data[3])
-    project.raised = parseFloat(formatEther(BigInt(projectRead.data[4])))
-    project.owner = projectRead.data[5]
-    project.isClosed = projectRead.data[6]
-    project.goalReached = projectRead.data[7]
-    if (project.deadline != deadline) {
-        setDeadline(project.deadline)
-    }
+    useEffect(() => {
+        if (projectRead.data) {
+            setProject({
+                name : projectRead.data[0],
+                description : projectRead.data[1],
+                goal : parseFloat(formatEther(BigInt(projectRead.data[2]))),
+                deadline : Number(projectRead.data[3]),
+                raised : parseFloat(formatEther(BigInt(projectRead.data[4]))),
+                owner : projectRead.data[5],
+                isClosed : projectRead.data[6],
+                goalReached : projectRead.data[7]
+            })
+            if (Number(projectRead.data[3]) != deadline) {
+                setDeadline(Number(projectRead.data[3]))
+            }
+        }
+        if (deadline !== 0 && new Date().getTime() < deadline * 1000) {
+            const interval = setInterval(() => {
+                const now = new Date().getTime()
+                const date = new Date(deadline * 1000).getTime()
+                const diffTime = Math.abs(date - now)
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+                const diffHours = Math.floor(diffTime / (1000 * 60 * 60)) % 24
+                const diffMinutes = Math.floor(diffTime / (1000 * 60)) % 60
+                const diffSeconds = Math.floor(diffTime / (1000)) % 60
+                setTimeLeft(`${diffDays.toString().padStart(2, "0")} : ${diffHours.toString().padStart(2, "0")} : ${diffMinutes.toString().padStart(2, "0")} : ${diffSeconds.toString().padStart(2, "0")}`)
+            }, 1000)
+            return () => clearInterval(interval)
+        }
+    }, [timeLeft, deadline, projectRead.data])
 
     return (
-        <div className={`${isHidden() ? "hidden" : ""} flex flex-col lg:flex-row gap-3 items-center justify-between w-full p-5 mb-4 rounded-lg bg-white bg-opacity-90 py-5 shadow-md`}>
+        <li className={`${isHidden() ? "hidden" : ""} flex flex-col lg:flex-row gap-3 items-center justify-between w-full p-5 mb-4 rounded-lg bg-white bg-opacity-90 py-5 shadow-md`}>
             <div className='flex flex-col gap-1 items-start w-full lg:w-1/5 text-start'>
                 <h1 className='text-lg font-bold'>{project.name}</h1>
                 <h3 className="text-md">{project.description}</h3>
@@ -370,7 +369,7 @@ const Project = ({ ID, search, withdrawable, refundable, finished }: Props) => {
                 </div>
             )}
             <Toast message={message} type={type} show={show} onClick={() => { setShow(false) }} />
-        </div>
+        </li>
     )
 }
 

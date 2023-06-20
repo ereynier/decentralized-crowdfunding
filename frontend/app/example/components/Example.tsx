@@ -35,8 +35,7 @@ const Example = () => {
     const [loading, setLoading] = useState(false)
     const [contributor, setContributor] = useState("")
     const [amount, setAmount] = useState("")
-
-    let project: Project = {
+    const [project, setProject] = useState<Project>({
         name: "",
         description: "",
         goal: 0,
@@ -45,7 +44,18 @@ const Example = () => {
         raised: 0,
         isClosed: false,
         goalReached: false
-    }
+    } as Project)
+
+    // let project: Project = {
+    //     name: "",
+    //     description: "",
+    //     goal: 0,
+    //     deadline: 0,
+    //     owner: "",
+    //     raised: 0,
+    //     isClosed: false,
+    //     goalReached: false
+    // }
 
     const { address, isConnected } = useAccount()
 
@@ -107,18 +117,30 @@ const Example = () => {
         }
     })
 
-    if (data) {
-        project.name = data[0]
-        project.description = data[1]
-        project.goal = Number(data[2])
-        project.deadline = Number(data[3])
-        project.raised = Number(data[4])
-        project.owner = data[5]
-        project.isClosed = data[6]
-        project.goalReached = data[7]
-    }
+    // if (data) {
+    //     project.name = data[0]
+    //     project.description = data[1]
+    //     project.goal = Number(data[2])
+    //     project.deadline = Number(data[3])
+    //     project.raised = Number(data[4])
+    //     project.owner = data[5]
+    //     project.isClosed = data[6]
+    //     project.goalReached = data[7]
+    // }
 
     useEffect(() => {
+        if (data) {
+            setProject({
+                name: data[0],
+                description: data[1],
+                goal: Number(data[2]),
+                deadline: Number(data[3]),
+                raised: Number(data[4]),
+                owner: data[5],
+                isClosed: data[6],
+                goalReached: data[7]
+            })
+        }
         if (deadline === 0 && project.deadline !== 0) {
             setDeadline(project.deadline)
         }
@@ -133,7 +155,7 @@ const Example = () => {
             setTimeLeft(`${diffDays.toString().padStart(2, "0")} : ${diffHours.toString().padStart(2, "0")} : ${diffMinutes.toString().padStart(2, "0")} : ${diffSeconds.toString().padStart(2, "0")}`)
         }, 1000)
         return () => clearInterval(interval)
-    }, [timeLeft])
+    }, [timeLeft, data])
 
     const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setValue(e.target.value)
@@ -157,18 +179,15 @@ const Example = () => {
         setLoading(true)
     }
 
-    if (isLoading) return (<div>Loading...</div>)
-    if (isError) return (<div>Error</div>)
-
     return (
-        <div className='flex flex-col gap-5 items-center justify-center w-11/12 py-10 rounded-lg bg-white bg-opacity-80 shadow-lg'>
-            <h1 className='text-5xl font-bold'>{project.name}</h1>
+        <div className='flex flex-col gap-5 items-center justify-center w-full sm:w-11/12 py-10 rounded-lg bg-white bg-opacity-80 shadow-lg'>
+            <h1 className='text-2xl text-center sm:text-4xl md:text-5xl font-bold'>{project.name}</h1>
             <h3 className="text-2xl w-2/3 text-center">{project.description}</h3>
-            <p className={`text-sm ${montserrat.className}`}>Owner: {project.owner}</p>
+            <p className={`text-sm text-center ${montserrat.className}`}>Owner: <span className='  break-all'>{project.owner}</span></p>
             <div className='flex flex-col gap-2 w-full items-center text-center'>
                 <p className={`text-2xl w-full text-center`}>Deadline:</p>
                 {deadline * 1000 > new Date().getTime() ? (
-                    <p className={`text-4xl w-full text-center ${orbitron.className}`}>{timeLeft}</p>
+                    <p className={` text-xl sm:text-3xl md:text-4xl w-full text-center ${orbitron.className}`}>{timeLeft}</p>
                 ) : (
                     <p className={`text-4xl w-full text-center ${orbitron.className}`}>{"FINISHED"}</p>
                 )}
@@ -180,14 +199,11 @@ const Example = () => {
                 </div>
             </div>
             <div className='flex flex-col gap-1 items-center'>
-                <div className='flex flex-row gap-2'>
-                    <p className={`text-3xl`}>New contribution:</p>
-                    <p className={`text-3xl ${montserrat.className} ${amount ? "" : "hidden"}`}>{amount} ETH</p>
-                </div>
-                <p className={`text-sm ${montserrat.className} ${amount ? "" : "hidden"}`}>by {contributor}</p>
+                <p className={`text-lg sm:text-2xl md:text-3xl`}>New contribution: <span className={`${montserrat.className} ${amount ? "" : "hidden"}`}>{amount} ETH</span></p>
+                <p className={`text-sm break-normal ${montserrat.className} ${amount ? "" : "hidden"}`}>by: <span className='break-all'>{contributor}</span></p>
             </div>
             <div className='flex flex-col items-center justify-center gap-4'>
-                <div className='flex flex-row gap-5 items-end'>
+                <div className='flex flex-col items-center sm:flex-row gap-5 sm:items-end'>
                     <div className='flex flex-col gap-1 items-center'>
                         <label htmlFor="description" className='text-sm w-full text-start'>Amount in ETH</label>
                         <input type="text" className="w-full border rounded-md p-1" placeholder='Amount' value={value} onChange={handleValueChange} />
