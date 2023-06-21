@@ -58,7 +58,7 @@ const Navbar = () => {
               <a href="/list" className="block py-2 pl-3 pr-4 text-black font-bold hover:text-neutral-700 rounded md:bg-transparent md:p-0" aria-current="page">List</a>
             </li>
             <li>
-              <a href="" target='_blank' className="block py-2 pl-3 pr-4 text-black font-bold hover:text-neutral-700 rounded md:bg-transparent md:p-0" aria-current="page">Article</a>
+              <a href="https://ereynier.medium.com/crowdfunding-d%C3%A9centralis%C3%A9-les-avantages-de-la-blockchain-44cf1ac8b95b?source=friends_link&sk=232434ad3796d715ef15327fd6d6345a" target='_blank' className="block py-2 pl-3 pr-4 text-black font-bold hover:text-neutral-700 rounded md:bg-transparent md:p-0" aria-current="page">Article</a>
             </li>
           </ul>
         </div>

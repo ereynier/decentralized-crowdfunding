@@ -7,7 +7,7 @@ const Welcome = () => {
             <div className='flex flex-col w-full items-start gap-4'>
                 <h1 className='text-3xl sm:text-5xl font-bold'>Decentralized Crowdfunding</h1>
                 <h3 className="text-lg sm:text-2xl w-full sm:w-1/4 font-semibold">Use the power of the blockchain to create decentralized and transparent crowdfunding.</h3>
-                <a href="/" target="_blank" className='text-lg font-medium italic mt-2'><span className=' hover:underline'>Learn more</span> →</a>
+                <a href="https://ereynier.medium.com/crowdfunding-d%C3%A9centralis%C3%A9-les-avantages-de-la-blockchain-44cf1ac8b95b?source=friends_link&sk=232434ad3796d715ef15327fd6d6345a" target="_blank" className='text-lg font-medium italic mt-2'><span className=' hover:underline'>Learn more</span> →</a>
                 <div className='flex flex-col mt-6 gap-1'>
                     <h3 className="text-xl font-semibold w-fit">Do you need some <span className='text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500'>Sepolia</span> test ETH ?</h3>
                     <a href="https://sepoliafaucet.com/" target="_blank" className='text-lg font-medium ml-2'>⮡ <span className='italic hover:underline'>Alchemy</span></a>
