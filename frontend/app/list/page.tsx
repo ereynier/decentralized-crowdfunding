@@ -3,7 +3,7 @@ import { Metadata } from 'next'
 import List from './components/List'
 
 export const metadata: Metadata = {
-  title: 'DCrowdfunding | List',
+  title: 'Fundify | List',
   description: 'Decentralized crowdfunding list',
 }
 

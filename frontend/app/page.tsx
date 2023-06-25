@@ -3,7 +3,7 @@ import { Metadata } from 'next'
 import Welcome from './components/Welcome'
 
 export const metadata: Metadata = {
-  title: 'DCrowdfunding | Welcome',
+  title: 'Fundify | Welcome',
   description: 'Discover the decentralized crowdfunding',
 }
 
