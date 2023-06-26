@@ -360,7 +360,7 @@ const Project = ({ ID, search, withdrawable, refundable, finished }: Props) => {
                 <button onClick={handleWithdraw} disabled={project.raised == 0 || loading} className={`bg-gradient-to-bl ${project.raised == 0 || loading ? "to-neutral-400 from-gray-800 cursor-not-allowed" : "to-sky-400 from-blue-600 hover:bg-gradient-to-b shadow-lg hover:shadow-sm cursor-pointer"} text-white font-bold py-2 px-4 rounded w-fit`}>Withdraw</button>
             )}
             {project.isClosed && (!project.goalReached || project.owner != address) && (
-                <button onClick={handleRefund} disabled={!isConnected || getContribution.data == 0 || loading} className={`bg-gradient-to-bl ${!isConnected || getContribution.data == 0 || loading ? "to-neutral-400 from-gray-800 cursor-not-allowed" : "to-sky-400 from-blue-600 hover:bg-gradient-to-b shadow-lg hover:shadow-sm cursor-pointer"} text-white font-bold py-2 px-4 rounded w-fit`}>Refund</button>
+                <button onClick={handleRefund} disabled={!isConnected || getContribution.data == 0 || loading || project.goalReached} className={`bg-gradient-to-bl ${!isConnected || getContribution.data == 0 || loading || project.goalReached ? "to-neutral-400 from-gray-800 cursor-not-allowed" : "to-sky-400 from-blue-600 hover:bg-gradient-to-b shadow-lg hover:shadow-sm cursor-pointer"} text-white font-bold py-2 px-4 rounded w-fit`}>Refund</button>
             )}
             {!project.isClosed && (
                 <div className='flex flex-col items-center justify-center gap-2'>
