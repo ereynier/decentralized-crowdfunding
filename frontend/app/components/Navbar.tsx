@@ -5,6 +5,7 @@ import { useAccount, useConnect } from 'wagmi'
 import { InjectedConnector } from 'wagmi/connectors/injected'
 import { montserrat } from '../utils/font'
 import { chain } from "@utils/chain"
+import Link from 'next/link'
 
 
 const Navbar = () => {
@@ -25,10 +26,10 @@ const Navbar = () => {
   return (
     <nav className="w-full bg-white bg-opacity-85 border-gray-200 shadow-md sticky top-0 z-50 navbar">
       <div className="flex flex-wrap items-center justify-between mx-4 sm:mx-20 p-4 mb-2">
-        <a href="/" target='' className="flex flex-col items-start">
+        <Link href="/" target='' className="flex flex-col items-start">
           <span className={` self-start text-3xl font-semibold whitespace-nowrap `}>Fundify</span>
           <p className='text-md' >Decentralize your dreams</p>
-        </a>
+        </Link>
         <div className="flex items-center justify-center md:justify-start md:ml-4">
           {isConnected ? (
             <p onClick={() => { navigator.clipboard.writeText(address as string);}} title='Click to copy' className={`break-all text-black font-medium text-lg cursor-pointer ${montserrat.className}`}>{address}</p>
@@ -46,19 +47,19 @@ const Navbar = () => {
         <div className="hidden w-full md:block md:w-auto" id="navbar-default">
           <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border rounded-lg bg-transparent md:flex-row md:space-x-8 md:mt-0 md:border-0 ">
             <li>
-              <a href="/" className="block py-2 pl-3 pr-4 text-black font-bold hover:text-neutral-700 rounded md:bg-transparent md:p-0" aria-current="page">Home</a>
+              <Link href="/" className="block py-2 pl-3 pr-4 text-black font-bold hover:text-neutral-700 rounded md:bg-transparent md:p-0" aria-current="page">Home</Link>
             </li>
             <li>
-              <a href="/example" className="block py-2 pl-3 pr-4 text-black font-bold hover:text-neutral-700 rounded md:bg-transparent md:p-0" aria-current="page">Example</a>
+              <Link href="/example" className="block py-2 pl-3 pr-4 text-black font-bold hover:text-neutral-700 rounded md:bg-transparent md:p-0" aria-current="page">Example</Link>
             </li>
             <li>
-              <a href="/create" className="block py-2 pl-3 pr-4 text-black font-bold hover:text-neutral-700 rounded md:bg-transparent md:p-0" aria-current="page">Create</a>
+              <Link href="/create" className="block py-2 pl-3 pr-4 text-black font-bold hover:text-neutral-700 rounded md:bg-transparent md:p-0" aria-current="page">Create</Link>
             </li>
             <li>
-              <a href="/list" className="block py-2 pl-3 pr-4 text-black font-bold hover:text-neutral-700 rounded md:bg-transparent md:p-0" aria-current="page">List</a>
+              <Link href="/list" className="block py-2 pl-3 pr-4 text-black font-bold hover:text-neutral-700 rounded md:bg-transparent md:p-0" aria-current="page">List</Link>
             </li>
             <li>
-              <a href="https://ereynier.medium.com/crowdfunding-d%C3%A9centralis%C3%A9-les-avantages-de-la-blockchain-44cf1ac8b95b?source=friends_link&sk=232434ad3796d715ef15327fd6d6345a" target='_blank' className="block py-2 pl-3 pr-4 text-black font-bold hover:text-neutral-700 rounded md:bg-transparent md:p-0" aria-current="page">Article</a>
+              <Link href="https://ereynier.medium.com/crowdfunding-d%C3%A9centralis%C3%A9-les-avantages-de-la-blockchain-44cf1ac8b95b?source=friends_link&sk=232434ad3796d715ef15327fd6d6345a" target='_blank' className="block py-2 pl-3 pr-4 text-black font-bold hover:text-neutral-700 rounded md:bg-transparent md:p-0" aria-current="page">Article</Link>
             </li>
           </ul>
         </div>
